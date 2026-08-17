@@ -1,0 +1,12 @@
+{
+  "entity": {
+    "camera": {
+      "map_today": {
+        "default": "mdi:map-marker-alert"
+      },
+      "map_tomorrow": {
+        "default": "mdi:map-clock-outline"
+      }
+    }
+  }
+}

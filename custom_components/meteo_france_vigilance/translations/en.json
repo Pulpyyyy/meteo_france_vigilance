@@ -1,0 +1,91 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Météo France vigilance",
+        "description": "An API key from the Météo France public portal is required, subscribed to the « Données Publiques Vigilance » service.",
+        "data": {
+          "api_key": "API key",
+          "departments": "Departments",
+          "maps": "Download the national maps",
+          "scan_interval": "Update interval"
+        },
+        "data_description": {
+          "api_key": "The application key shown on portail-api.meteofrance.fr, under your « DonneesPubliquesVigilance » subscription.",
+          "departments": "One or more department codes. Coastal areas can be typed in directly (3010, 6410…).",
+          "maps": "The two national thumbnails, today and tomorrow, published as camera entities.",
+          "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Météo France key refused",
+        "description": "The key is no longer accepted — it may have expired. Enter a new one to resume updates.",
+        "data": {
+          "api_key": "API key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Météo France did not answer. Check the connection and try again.",
+      "invalid_auth": "Key refused by Météo France.",
+      "unknown_department": "Unknown to the bulletin: {unknown}"
+    },
+    "abort": {
+      "reauth_successful": "The key has been replaced.",
+      "single_config_entry": "Météo France vigilance is already configured. Add departments in its options.",
+      "single_instance_allowed": "Météo France vigilance is already configured. Add departments in its options."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Météo France vigilance",
+        "data": {
+          "departments": "Departments",
+          "maps": "Download the national maps",
+          "scan_interval": "Update interval"
+        },
+        "data_description": {
+          "departments": "One or more department codes. Coastal areas can be typed in directly (3010, 6410…).",
+          "maps": "The two national thumbnails, today and tomorrow, published as camera entities.",
+          "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Météo France did not answer. Check the connection and try again.",
+      "invalid_auth": "Key refused by Météo France.",
+      "unknown_department": "Unknown to the bulletin: {unknown}"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "vigilance_today": {
+        "name": "Today",
+        "state": {
+          "green": "Green",
+          "yellow": "Yellow",
+          "orange": "Orange",
+          "red": "Red"
+        }
+      },
+      "vigilance_tomorrow": {
+        "name": "Tomorrow",
+        "state": {
+          "green": "Green",
+          "yellow": "Yellow",
+          "orange": "Orange",
+          "red": "Red"
+        }
+      }
+    },
+    "camera": {
+      "map_today": {
+        "name": "Map today"
+      },
+      "map_tomorrow": {
+        "name": "Map tomorrow"
+      }
+    }
+  }
+}

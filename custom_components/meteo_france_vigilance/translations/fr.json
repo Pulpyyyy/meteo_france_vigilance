@@ -1,0 +1,91 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Vigilance Météo France",
+        "description": "Une clé d'API du portail public Météo France est nécessaire, abonnée au service « Données Publiques Vigilance ».",
+        "data": {
+          "api_key": "Clé d'API",
+          "departments": "Départements",
+          "maps": "Télécharger les cartes nationales",
+          "scan_interval": "Intervalle de mise à jour"
+        },
+        "data_description": {
+          "api_key": "La clé d'application affichée sur portail-api.meteofrance.fr, dans votre abonnement « DonneesPubliquesVigilance ».",
+          "departments": "Un ou plusieurs codes de département. Les zones littorales peuvent être saisies directement (3010, 6410…).",
+          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en caméras.",
+          "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Clé Météo France refusée",
+        "description": "La clé n'est plus acceptée — elle a peut-être expiré. Saisissez-en une nouvelle pour reprendre les mises à jour.",
+        "data": {
+          "api_key": "Clé d'API"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Météo France n'a pas répondu. Vérifiez la connexion et réessayez.",
+      "invalid_auth": "Clé refusée par Météo France.",
+      "unknown_department": "Inconnu du bulletin : {unknown}"
+    },
+    "abort": {
+      "reauth_successful": "La clé a été remplacée.",
+      "single_config_entry": "Vigilance Météo France est déjà configurée. Ajoutez les départements dans ses options.",
+      "single_instance_allowed": "Vigilance Météo France est déjà configurée. Ajoutez les départements dans ses options."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Vigilance Météo France",
+        "data": {
+          "departments": "Départements",
+          "maps": "Télécharger les cartes nationales",
+          "scan_interval": "Intervalle de mise à jour"
+        },
+        "data_description": {
+          "departments": "Un ou plusieurs codes de département. Les zones littorales peuvent être saisies directement (3010, 6410…).",
+          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en caméras.",
+          "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Météo France n'a pas répondu. Vérifiez la connexion et réessayez.",
+      "invalid_auth": "Clé refusée par Météo France.",
+      "unknown_department": "Inconnu du bulletin : {unknown}"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "vigilance_today": {
+        "name": "Aujourd'hui",
+        "state": {
+          "green": "Vert",
+          "yellow": "Jaune",
+          "orange": "Orange",
+          "red": "Rouge"
+        }
+      },
+      "vigilance_tomorrow": {
+        "name": "Demain",
+        "state": {
+          "green": "Vert",
+          "yellow": "Jaune",
+          "orange": "Orange",
+          "red": "Rouge"
+        }
+      }
+    },
+    "camera": {
+      "map_today": {
+        "name": "Carte aujourd'hui"
+      },
+      "map_tomorrow": {
+        "name": "Carte demain"
+      }
+    }
+  }
+}

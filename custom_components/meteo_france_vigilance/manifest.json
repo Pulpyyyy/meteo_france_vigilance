@@ -1,0 +1,15 @@
+{
+  "domain": "meteo_france_vigilance",
+  "name": "Vigilance Météo France",
+  "after_dependencies": ["lovelace"],
+  "codeowners": ["@jeedomleo"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http"],
+  "documentation": "https://github.com/Pulpyyyy/meteo_france_vigilance",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/Pulpyyyy/meteo_france_vigilance/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "1.2.0"
+}
