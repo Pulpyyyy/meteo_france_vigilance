@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.0 — 2026-08-17
+## 1.0.0 — 2026-08-17
 
 Première publication HACS.
 
