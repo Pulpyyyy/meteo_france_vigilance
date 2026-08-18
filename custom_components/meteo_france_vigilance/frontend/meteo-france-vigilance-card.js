@@ -793,8 +793,14 @@ class MeteoFranceVigilanceCard extends HTMLElement {
         return;
 
       case "url":
-        if (config.url_path) {
-          window.open(config.url_path, config.new_tab === false ? "_self" : "_blank");
+        if (!config.url_path) return;
+        if (config.new_tab === false) {
+          window.open(config.url_path, "_self");
+        } else {
+          // noopener : l'onglet ouvert ne doit pas garder la main sur le
+          // tableau de bord (window.opener). Pas en _self, où certains
+          // navigateurs le traduiraient par « nouvelle fenêtre ».
+          window.open(config.url_path, "_blank", "noopener");
         }
         return;
 

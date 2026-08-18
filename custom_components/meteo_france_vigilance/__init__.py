@@ -26,13 +26,14 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED, Platform
-from homeassistant.core import CoreState, HomeAssistant
+from homeassistant.core import CoreState, HomeAssistant, ServiceCall, callback
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DOMAIN
+from .const import DOMAIN, SERVICE_REFRESH
 from .coordinator import VigilanceCoordinator
 from .frontend import JSModuleRegistration
 
@@ -48,7 +49,35 @@ type VigilanceConfigEntry = ConfigEntry[VigilanceCoordinator]
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Publier la carte Lovelace, qu'il y ait une entrée ou non."""
     await _async_setup_frontend(hass)
+    _async_register_services(hass)
     return True
+
+
+@callback
+def _async_register_services(hass: HomeAssistant) -> None:
+    """Déclarer l'action `refresh`.
+
+    Au niveau du composant, pas de l'entrée : l'action existe dès que
+    l'intégration est installée et répond par une erreur traduite, plutôt que
+    par « service inconnu », si l'entrée n'est pas chargée.
+    """
+
+    async def _async_refresh(call: ServiceCall) -> None:
+        entries = [
+            entry
+            for entry in hass.config_entries.async_entries(DOMAIN)
+            if entry.state is ConfigEntryState.LOADED
+        ]
+        if not entries:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="not_loaded"
+            )
+        for entry in entries:
+            # `async_refresh`, pas `async_request_refresh` : le geste est
+            # volontaire, il ne passe pas par l'anti-rebond du coordinateur.
+            await entry.runtime_data.async_refresh()
+
+    hass.services.async_register(DOMAIN, SERVICE_REFRESH, _async_refresh)
 
 
 async def _async_setup_frontend(hass: HomeAssistant) -> None:

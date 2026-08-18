@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="images/logo.svg" width="128" alt="Logo Vigilance Météo France — le profil de la France rayé des quatre couleurs de vigilance">
+</p>
+
 # Vigilance Météo France
 
 [![Validate](https://github.com/Pulpyyyy/meteo_france_vigilance/actions/workflows/validate.yml/badge.svg)](https://github.com/Pulpyyyy/meteo_france_vigilance/actions/workflows/validate.yml)
@@ -10,15 +14,11 @@ La carte de vigilance de Météo-France dans Home Assistant (API publique
 
 Remplace le montage à base de `command_line` + `jq` + `local_file` +
 automatisation de rafraîchissement partagé sur le forum HACF : une entrée de
-configuration, deux capteurs par département, deux caméras, une carte.
+configuration, deux capteurs par département, deux caméras, une comosition de cartes lovelace.
 
 | Thème clair | Thème sombre |
 |:---:|:---:|
 | <img src="images/hero-light.png" alt="La carte Vigilance Météo France, thème clair" width="380"> | <img src="images/hero-dark.png" alt="La carte Vigilance Météo France, thème sombre" width="380"> |
-
-> Les captures d'écran de cette page sont générées à partir d'un **bulletin
-> fictif** (données d'exemple). En production, la vignette nationale est le PNG
-> officiel servi par l'API de Météo-France.
 
 ---
 
@@ -30,7 +30,7 @@ configuration, deux capteurs par département, deux caméras, une carte.
   couleur de vigilance (`green`, `yellow`, `orange`, `red`), traduite par Home
   Assistant ; les phénomènes, leurs créneaux horaires et le commentaire
   national sont en attributs.
-- **Deux caméras** pour les vignettes nationales J et J+1, gardées en mémoire —
+- **Deux carte de France** pour les données nationales J et J+1, gardées en mémoire —
   rien n'est écrit dans `www/`.
 - **Carte Lovelace embarquée** : servie et enregistrée automatiquement par le
   composant, aucune ressource à déclarer, aucune dépendance (ni mushroom, ni
@@ -38,6 +38,12 @@ configuration, deux capteurs par département, deux caméras, une carte.
 - **4 dispositions × 4 thèmes** choisis en vignettes cliquables dans l'éditeur
   graphique — dont la **chronologie**, une barre de 24 h par phénomène qui
   n'existait pas dans le montage HACF.
+- **Action `refresh`** pour forcer une mise à jour, et **rattrapage
+  automatique des bulletins périmés** — relancé à un instant aléatoire sur
+  30 minutes pour ménager l'API.
+- **Veille de version** : si Météo France déploie une vigilance inconnue du
+  composant (V7…) ou un phénomène inédit, l'écart est signalé dans le journal
+  et dans **Paramètres → Réparations**, au lieu de passer inaperçu.
 - **Thème sombre géré** : l'encre de la vignette officielle (frontières,
   numéros, encart parisien) est re-encrée en clair automatiquement.
 - **Bilingue** : intégration, carte et éditeur suivent la langue de Home
@@ -112,7 +118,7 @@ change via **Reconfigurer**).
 | Option | Défaut | Rôle |
 |---|---|---|
 | Départements | — | Codes suivis. Les zones littorales se saisissent à la main (`3010`, `6410`…) |
-| Cartes nationales | activé | Télécharge les deux vignettes et crée les caméras |
+| Cartes nationales | activé | Télécharge les deux imagdes de la carte de France |
 | Intervalle | 30 min | De 5 à 720 min. Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps |
 
 ---
@@ -146,6 +152,30 @@ journée entière — et `timeline`, la liste des créneaux colorés de la péri
 Et sur l'appareil de l'intégration, les deux vignettes nationales :
 `camera.vigilance_meteo_france_carte_aujourd_hui` et `…_carte_demain`.
 
+### Action `meteo_france_vigilance.refresh`
+
+Force une mise à jour immédiate du bulletin — et des vignettes s'il a été
+réémis — sans attendre l'intervalle configuré. Utile après une coupure
+réseau, ou avant une notification qui doit partir avec la carte fraîche :
+
+```yaml
+actions:
+  - action: meteo_france_vigilance.refresh
+```
+
+Sans paramètre : le bulletin est national, une seule entrée de configuration
+existe. Si l'intégration n'est pas chargée, l'appel échoue avec un message
+traduit plutôt qu'un « service inconnu ». Visible aussi dans **Outils de
+développement → Actions**, sous le nom **Rafraîchir**.
+
+> **Rattrapage automatique** : quand le bulletin affiché sort de sa période de
+> validité (attribut `expired`), le composant programme lui-même un
+> rafraîchissement à un instant **aléatoire dans les 30 minutes** qui suivent.
+> Le tirage au sort étale les appels des milliers d'installations qui font le
+> même constat à la même heure, au lieu de solliciter l'API Météo France à la
+> même seconde. Si le bulletin n'est toujours pas réémis, le cycle suivant
+> retire au sort.
+
 ---
 
 ## 🃏 La carte Lovelace
@@ -155,7 +185,7 @@ type: custom:meteo-france-vigilance-card
 entity: sensor.vigilance_loiret_aujourd_hui
 ```
 
-C'est tout : le capteur de demain et les deux caméras sont retrouvés seuls,
+C'est tout : le capteur de demain et les deux cartes de France sont retrouvés seuls,
 par les attributs que le composant leur donne. Aucun nom d'entité n'est deviné.
 
 ### Dispositions — `layout`
@@ -236,7 +266,7 @@ La carte parle la même grammaire d'actions que les cartes livrées avec Home
 Assistant : `more-info`, `toggle`, `navigate` (+ `navigation_path`), `url`
 (+ `url_path`), `perform-action` (+ `perform_action`, `data`, `target`) et
 `none`. Par défaut, un clic ouvre la fiche de **ce qui est cliqué** : le
-capteur sur le bloc du jour, la caméra sur la vignette.
+capteur sur le bloc du jour, la carte de France.
 
 ```yaml
 type: custom:meteo-france-vigilance-card
@@ -263,15 +293,6 @@ layout: compact
 theme: bandeau
 periods: today
 ```
-
-### Thème sombre
-
-Le PNG de Météo-France est dessiné pour du papier blanc : sur un fond sombre,
-frontières et numéros de départements disparaissent. La carte superpose la
-même image réduite à sa seule encre, blanchie — les aplats de couleur ne sont
-pas touchés, et le navigateur ne télécharge rien de plus. Rien à configurer :
-la carte suit le thème actif — les vis-à-vis clair / sombre de cette page
-montrent le résultat.
 
 ---
 

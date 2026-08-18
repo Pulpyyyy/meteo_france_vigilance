@@ -23,6 +23,13 @@
         "data": {
           "api_key": "Clé d'API"
         }
+      },
+      "reconfigure": {
+        "title": "Remplacer la clé d'API",
+        "description": "La nouvelle clé est vérifiée auprès de Météo France avant d'être enregistrée. Les départements et les entités ne bougent pas.",
+        "data": {
+          "api_key": "Clé d'API"
+        }
       }
     },
     "error": {
@@ -32,6 +39,7 @@
     },
     "abort": {
       "reauth_successful": "La clé a été remplacée.",
+      "reconfigure_successful": "La clé a été remplacée.",
       "single_config_entry": "Vigilance Météo France est déjà configurée. Ajoutez les départements dans ses options.",
       "single_instance_allowed": "Vigilance Météo France est déjà configurée. Ajoutez les départements dans ses options."
     }
@@ -86,6 +94,23 @@
       "map_tomorrow": {
         "name": "Carte demain"
       }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Rafraîchir",
+      "description": "Récupère immédiatement le bulletin de vigilance, sans attendre la prochaine mise à jour planifiée."
+    }
+  },
+  "exceptions": {
+    "not_loaded": {
+      "message": "Vigilance Météo France n'est pas chargée."
+    }
+  },
+  "issues": {
+    "unsupported_vigilance_version": {
+      "title": "Version de vigilance inconnue ({reported})",
+      "description": "Météo France publie désormais le bulletin en vigilance {reported}, alors que cette version du composant est écrite pour la {supported}. Les mises à jour continuent, mais les nouveaux phénomènes ou couleurs seront affichés de façon générique. Vérifiez si une mise à jour de l'intégration est disponible."
     }
   }
 }

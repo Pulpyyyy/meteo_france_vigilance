@@ -80,6 +80,16 @@ INTERVAL_SELECTOR = NumberSelector(
     )
 )
 
+# La saisie d'une clé seule : partagée par la ré-authentification (clé refusée
+# en cours de route) et la reconfiguration (remplacement volontaire).
+API_KEY_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_API_KEY): TextSelector(
+            TextSelectorConfig(type=TextSelectorType.PASSWORD)
+        )
+    }
+)
+
 
 def _settings_schema(defaults: Mapping[str, Any]) -> vol.Schema:
     """Ce qui est modifiable après coup : les départements et le rythme."""
@@ -107,7 +117,9 @@ async def _async_validate(
     Renvoie les erreurs de formulaire et la liste des domaines connus du
     bulletin — la seconde sert à écrire un message qui nomme ce qui manque.
     """
-    api = VigilanceApi(async_get_clientsession(hass), api_key)
+    # Un seul essai : le formulaire attend, et resoummettre relance. L'échelle
+    # complète de nouveaux essais reste celle du coordinateur.
+    api = VigilanceApi(async_get_clientsession(hass), api_key, retries=1)
     try:
         payload = await api.async_get_bulletin()
     except VigilanceAuthError:
@@ -207,13 +219,39 @@ class VigilanceConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_API_KEY): TextSelector(
-                        TextSelectorConfig(type=TextSelectorType.PASSWORD)
-                    )
-                }
-            ),
+            data_schema=API_KEY_SCHEMA,
+            errors=errors,
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Remplacer la clé sans attendre qu'elle soit refusée.
+
+        C'est le pendant volontaire de la ré-authentification : une clé sur le
+        point d'expirer, ou régénérée sur le portail, se remplace ici avant que
+        les mises à jour ne tombent. Même garantie que partout : la clé est
+        essayée sur l'API avant d'être enregistrée, et rien d'autre ne bouge —
+        ni les départements, ni les entités.
+        """
+        errors: dict[str, str] = {}
+        entry = self._get_reconfigure_entry()
+
+        if user_input is not None:
+            errors, _ = await _async_validate(
+                self.hass,
+                user_input[CONF_API_KEY],
+                list(entry.data.get(CONF_DEPARTMENTS, [])),
+            )
+            if not errors:
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data_updates={CONF_API_KEY: user_input[CONF_API_KEY].strip()},
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=API_KEY_SCHEMA,
             errors=errors,
         )
 

@@ -8,5 +8,10 @@
         "default": "mdi:map-clock-outline"
       }
     }
+  },
+  "services": {
+    "refresh": {
+      "service": "mdi:refresh"
+    }
   }
 }

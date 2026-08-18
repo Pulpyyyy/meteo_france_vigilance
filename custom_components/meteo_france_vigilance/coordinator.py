@@ -8,15 +8,19 @@ bulletin a changé — elles pèsent 55 ko chacune et ne bougent qu'avec lui.
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 import logging
+import random
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -29,7 +33,10 @@ from .const import (
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    EXPIRED_RETRY_WINDOW,
     PERIODS,
+    SUPPORTED_VIGILANCE_VERSION,
+    UNKNOWN_PHENOMENON,
     color,
     department_name,
     phenomenon,
@@ -79,6 +86,11 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
         self._maps: dict[str, bytes | None] = {p: None for p in PERIODS}
         self._maps_updated: dict[str, datetime | None] = {p: None for p in PERIODS}
         self._maps_stamp: str | None = None
+        # Rattrapage d'un bulletin périmé — voir _schedule_expired_retry.
+        self._expired_retry_unsub: CALLBACK_TYPE | None = None
+        # Nouveautés de l'API déjà signalées (version, phénomène, couleur) :
+        # un avertissement par nouveauté et par session, pas un par cycle.
+        self._reported_novelties: set[str] = set()
 
         super().__init__(
             hass,
@@ -107,7 +119,124 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
             await self._async_refresh_maps(payload.get("product", {}))
         data.maps = dict(self._maps)
         data.maps_updated = dict(self._maps_updated)
+
+        self._schedule_expired_retry(data)
         return data
+
+    async def async_shutdown(self) -> None:
+        """Annuler le rattrapage en attente avec le coordinateur."""
+        self._cancel_expired_retry()
+        await super().async_shutdown()
+
+    # ── Bulletin périmé ───────────────────────────────────────────────────────
+
+    def _schedule_expired_retry(self, data: VigilanceData) -> None:
+        """Rattraper un bulletin périmé sans faire pilonner l'API.
+
+        Quand la période du jour est dépassée, le bulletin réémis est en
+        général déjà disponible : attendre l'intervalle complet prolonge
+        l'affichage « périmé ». Mais toutes les installations font ce constat
+        à la même heure — le rafraîchissement de rattrapage est donc tiré à un
+        instant aléatoire de la demi-heure suivante, pour étaler les appels de
+        milliers de clients au lieu de les concentrer à la même seconde. Si le
+        bulletin est encore périmé au réveil, le cycle suivant retire au sort.
+        """
+        today = data.periods.get("today")
+        expired = bool(
+            today and today.end_time and today.end_time < dt_util.utcnow()
+        )
+
+        if not expired:
+            self._cancel_expired_retry()
+            return
+        if self._expired_retry_unsub is not None:
+            return  # un tirage attend déjà, ne pas en empiler un deuxième
+
+        async def _retry(_now: datetime) -> None:
+            self._expired_retry_unsub = None
+            await self.async_request_refresh()
+
+        delay = random.uniform(0, EXPIRED_RETRY_WINDOW)
+        _LOGGER.debug("Bulletin périmé, rattrapage dans %.0f s", delay)
+        self._expired_retry_unsub = async_call_later(self.hass, delay, _retry)
+
+    def _cancel_expired_retry(self) -> None:
+        """Désarmer le rattrapage, s'il y en a un."""
+        if self._expired_retry_unsub is not None:
+            self._expired_retry_unsub()
+            self._expired_retry_unsub = None
+
+    # ── Veille de version ─────────────────────────────────────────────────────
+
+    def _warn_novelty(self, key: str, message: str, *args: Any) -> None:
+        """Avertir une seule fois par nouveauté et par session."""
+        if key in self._reported_novelties:
+            return
+        self._reported_novelties.add(key)
+        _LOGGER.warning(message, *args)
+
+    def _check_api_version(self, product: dict[str, Any]) -> None:
+        """Comparer la version annoncée par le bulletin à celle qu'on sait lire.
+
+        Chaque réponse porte `version_vigilance` (V6 aujourd'hui) : si Météo
+        France déploie une V7, les tables de `const.py` ne décrivent plus
+        forcément la donnée. Le composant continue — les identifiants inconnus
+        retombent sur des libellés génériques — mais l'écart est dit une fois
+        en journal et affiché dans Paramètres → Réparations, au lieu de laisser
+        une carte silencieusement appauvrie.
+        """
+        reported = str(product.get("version_vigilance") or "")
+        if not reported or reported == SUPPORTED_VIGILANCE_VERSION:
+            ir.async_delete_issue(self.hass, DOMAIN, "unsupported_vigilance_version")
+            return
+
+        self._warn_novelty(
+            f"version:{reported}",
+            "Le bulletin annonce la vigilance « %s », ce composant est écrit "
+            "pour la « %s » (version_cdp : %s) — les nouveaux phénomènes ou "
+            "couleurs seront affichés de façon générique",
+            reported,
+            SUPPORTED_VIGILANCE_VERSION,
+            product.get("version_cdp"),
+        )
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            "unsupported_vigilance_version",
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="unsupported_vigilance_version",
+            translation_placeholders={
+                "reported": reported,
+                "supported": SUPPORTED_VIGILANCE_VERSION,
+            },
+            learn_more_url="https://github.com/Pulpyyyy/meteo_france_vigilance/issues",
+        )
+
+    def _check_novelties(self, phenomena: list[dict[str, Any]]) -> None:
+        """Détecter ce qu'une nouvelle version apporterait concrètement.
+
+        Même si `version_vigilance` ne bouge pas, un phénomène ou une couleur
+        ajoutés par Météo France se voient ici : c'est le filet qui attrape
+        l'évolution avant qu'un utilisateur ne remarque un « Phénomène
+        inconnu » sur sa carte.
+        """
+        for p in phenomena:
+            if p["slug"] == UNKNOWN_PHENOMENON["slug"]:
+                self._warn_novelty(
+                    f"phenomenon:{p['phenomenon_id']}",
+                    "Phénomène %s inconnu de ce composant — affiché « %s ». "
+                    "Une évolution de l'API ? Signalez-le sur le dépôt",
+                    p["phenomenon_id"],
+                    UNKNOWN_PHENOMENON["name"],
+                )
+            if p["color_id"] and p["color"] is None:
+                self._warn_novelty(
+                    f"color:{p['color_id']}",
+                    "Couleur %s inconnue de ce composant (niveaux 1 à 4 "
+                    "attendus). Une évolution de l'API ? Signalez-le sur le dépôt",
+                    p["color_id"],
+                )
 
     # ── Vignettes ─────────────────────────────────────────────────────────────
 
@@ -118,23 +247,26 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
         if stamp and stamp == self._maps_stamp and not missing:
             return
 
-        # Une seule période échoue rarement seule ; on tente les deux et on ne
+        # Une seule période échoue rarement seule ; on tente les deux — en
+        # parallèle, elles ne dépendent pas l'une de l'autre — et on ne
         # remplace que ce qui est arrivé, pour ne jamais afficher une carte de
         # ce matin à côté d'une carte de la veille sans le dire.
-        fetched = 0
-        for period in PERIODS:
+        async def _fetch(period: str) -> bool:
             try:
-                self._maps[period] = await self.api.async_get_map(period)
-                self._maps_updated[period] = dt_util.utcnow()
-                fetched += 1
+                content = await self.api.async_get_map(period)
             except VigilanceApiError as err:
                 _LOGGER.warning(
                     "Vignette « %s » indisponible, la précédente est conservée : %s",
                     period,
                     err,
                 )
+                return False
+            self._maps[period] = content
+            self._maps_updated[period] = dt_util.utcnow()
+            return True
 
-        if fetched == len(PERIODS):
+        fetched = await asyncio.gather(*(_fetch(period) for period in PERIODS))
+        if all(fetched):
             self._maps_stamp = stamp
 
     # ── Lecture du bulletin ───────────────────────────────────────────────────
@@ -142,6 +274,7 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
     def _parse(self, payload: dict[str, Any]) -> VigilanceData:
         """Transformer la réponse de l'API en données d'entités."""
         product = payload.get("product", {})
+        self._check_api_version(product)
         data = VigilanceData(
             update_time=dt_util.parse_datetime(str(product.get("update_time") or ""))
             or None,
@@ -210,6 +343,7 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
         # l'autre ; trier par gravité puis par identifiant donne une carte
         # stable, où le plus grave est en tête.
         phenomena.sort(key=lambda p: (-(p["color_id"] or 0), p["phenomenon_id"]))
+        self._check_novelties(phenomena)
 
         return {
             "department": code,

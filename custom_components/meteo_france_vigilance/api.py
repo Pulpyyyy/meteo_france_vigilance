@@ -10,6 +10,7 @@ alors qu'un simple nouvel essai suffit.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from typing import Any
 
@@ -39,9 +40,18 @@ class VigilanceAuthError(VigilanceApiError):
 class VigilanceApi:
     """Client de l'API, sans état — la session est celle de Home Assistant."""
 
-    def __init__(self, session: ClientSession, api_key: str) -> None:
-        """Retenir la session partagée et la clé d'application."""
+    def __init__(
+        self, session: ClientSession, api_key: str, retries: int = API_RETRIES
+    ) -> None:
+        """Retenir la session partagée et la clé d'application.
+
+        `retries` : le coordinateur garde l'échelle complète — un cycle raté se
+        rattrape au suivant. Le flux de configuration, lui, passe 1 : mieux
+        vaut répondre « connexion impossible » en trente secondes que bloquer
+        le formulaire deux minutes, resoummettre relançant l'essai.
+        """
         self._session = session
+        self._retries = max(1, retries)
         # Le portail délivre parfois la clé préfixée ; l'en-tête `apikey`
         # attend la valeur nue, et un préfixe collé donne un 401 illisible.
         self._api_key = api_key.strip().removeprefix("Bearer ").strip()
@@ -59,7 +69,7 @@ class VigilanceApi:
         """
         last_error: Exception | None = None
 
-        for attempt in range(1, API_RETRIES + 1):
+        for attempt in range(1, self._retries + 1):
             try:
                 async with self._session.get(
                     url,
@@ -73,11 +83,17 @@ class VigilanceApi:
                     response.raise_for_status()
 
                     if not binary:
-                        # L'API sert le bulletin en `application/json` mais
-                        # bascule en `text/plain` sur certaines erreurs
-                        # applicatives ; décoder sans vérifier le type évite un
-                        # faux négatif sur une réponse pourtant valide.
-                        payload = await response.json(content_type=None)
+                        # Décodé à la main plutôt que par `response.json()` :
+                        # d'une part l'API bascule en `text/plain` sur
+                        # certaines erreurs applicatives et le type ne prouve
+                        # rien ; d'autre part le bulletin France entière
+                        # dépasse le mégaoctet, et le parser dans l'executor
+                        # évite de bloquer la boucle d'événements à chaque
+                        # cycle.
+                        raw = await response.read()
+                        payload = await asyncio.get_running_loop().run_in_executor(
+                            None, json.loads, raw
+                        )
                         if not isinstance(payload, dict) or "product" not in payload:
                             raise VigilanceApiError(
                                 "Bulletin inattendu : clé « product » absente"
@@ -95,12 +111,12 @@ class VigilanceApi:
                 raise
             except (ClientResponseError, ClientError, TimeoutError, ValueError) as err:
                 last_error = err
-                if attempt < API_RETRIES:
+                if attempt < self._retries:
                     _LOGGER.debug(
                         "%s : essai %s/%s échoué (%s), nouvelle tentative",
                         url,
                         attempt,
-                        API_RETRIES,
+                        self._retries,
                         err,
                     )
                     # Attente croissante : une bascule de bulletin met quelques
@@ -108,7 +124,7 @@ class VigilanceApi:
                     await asyncio.sleep(API_RETRY_DELAY * attempt)
             except VigilanceApiError as err:
                 last_error = err
-                if attempt < API_RETRIES:
+                if attempt < self._retries:
                     await asyncio.sleep(API_RETRY_DELAY * attempt)
 
         raise VigilanceApiError(f"{url} : {last_error}") from last_error

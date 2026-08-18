@@ -36,6 +36,16 @@ API_TIMEOUT: Final = 30
 # cassée sur le tableau de bord.
 MAP_MIN_BYTES: Final = 5000
 
+# ── Actions ───────────────────────────────────────────────────────────────────
+SERVICE_REFRESH: Final = "refresh"
+
+# ── Version de l'API ──────────────────────────────────────────────────────────
+# La version du système de vigilance que ce composant sait lire — celle que
+# décrivent les tables PHENOMENA et COLORS ci-dessous. Chaque bulletin annonce
+# la sienne (`product.version_vigilance`) : un écart est signalé en journal et
+# en réparation plutôt que de passer inaperçu — voir _check_api_version.
+SUPPORTED_VIGILANCE_VERSION: Final = "V6"
+
 # ── Configuration ─────────────────────────────────────────────────────────────
 CONF_API_KEY: Final = "api_key"
 CONF_DEPARTMENTS: Final = "departments"
@@ -48,6 +58,12 @@ CONF_MAPS: Final = "maps"
 DEFAULT_SCAN_INTERVAL: Final = 30
 MIN_SCAN_INTERVAL: Final = 5
 MAX_SCAN_INTERVAL: Final = 720
+
+# Quand le bulletin est périmé, un rafraîchissement de rattrapage est tiré à un
+# instant aléatoire de cette fenêtre (secondes). Toutes les installations font
+# le même constat à la même heure : le hasard étale leurs appels au lieu de
+# faire pilonner l'API par des milliers de clients à la même seconde.
+EXPIRED_RETRY_WINDOW: Final = 30 * 60
 
 # ── Frontend ──────────────────────────────────────────────────────────────────
 # La carte voyage avec le composant : une installation HACS ne copie que

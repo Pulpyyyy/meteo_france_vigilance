@@ -23,6 +23,13 @@
         "data": {
           "api_key": "API key"
         }
+      },
+      "reconfigure": {
+        "title": "Replace the API key",
+        "description": "The new key is checked against Météo France before being saved. Departments and entities are left untouched.",
+        "data": {
+          "api_key": "API key"
+        }
       }
     },
     "error": {
@@ -32,6 +39,7 @@
     },
     "abort": {
       "reauth_successful": "The key has been replaced.",
+      "reconfigure_successful": "The key has been replaced.",
       "single_config_entry": "Météo France vigilance is already configured. Add departments in its options.",
       "single_instance_allowed": "Météo France vigilance is already configured. Add departments in its options."
     }
@@ -86,6 +94,23 @@
       "map_tomorrow": {
         "name": "Map tomorrow"
       }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Refresh",
+      "description": "Fetches the vigilance bulletin immediately, without waiting for the next scheduled update."
+    }
+  },
+  "exceptions": {
+    "not_loaded": {
+      "message": "Météo France vigilance is not loaded."
+    }
+  },
+  "issues": {
+    "unsupported_vigilance_version": {
+      "title": "Unknown vigilance version ({reported})",
+      "description": "Météo France now publishes the bulletin in vigilance version {reported}, while this version of the integration was written for {supported}. Updates keep coming, but new phenomena or colors may be shown generically. Check whether an integration update is available."
     }
   }
 }
