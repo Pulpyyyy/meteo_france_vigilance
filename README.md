@@ -118,7 +118,7 @@ change via **Reconfigurer**).
 | Option | Défaut | Rôle |
 |---|---|---|
 | Départements | — | Codes suivis. Les zones littorales se saisissent à la main (`3010`, `6410`…) |
-| Cartes nationales | activé | Télécharge les deux imagdes de la carte de France |
+| Cartes nationales | activé | Télécharge les deux images de la carte de France |
 | Intervalle | 30 min | De 5 à 720 min. Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps |
 
 ---
