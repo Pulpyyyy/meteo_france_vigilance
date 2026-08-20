@@ -22,11 +22,15 @@ chrome --headless=new --disable-gpu --allow-file-access-from-files \
 | `layout-focus` | disposition focus | 470,680 |
 | `layout-compact` | disposition compact | 470,200 |
 | `layout-chrono` | disposition chronologie | 470,600 |
-| `outre-mer` | trois territoires : alerte cyclonique, violet, calme | 720,880 |
+| `outre-mer` | trois territoires : alerte cyclonique, violet, calme | 980,570 |
+| `outre-mer-compact` | trois territoires empilés en compact | 470,320 |
 | `outre-mer-chrono` | chronologie d'une alerte cyclonique | 470,330 |
 
 Chaque page existe en `mode=light` et `mode=dark`. Les fichiers vont dans
 `images/` sous le nom `<page>-<mode>.png`.
+
+Les tailles de fenêtre sont à vérifier après chaque changement de page : une
+fenêtre trop courte coupe la dernière carte sans que rien ne le signale.
 
 Chrome veut des chemins **absolus** : une sortie relative échoue sans que la
 commande le dise clairement, et l'adresse du harnais doit être une URL

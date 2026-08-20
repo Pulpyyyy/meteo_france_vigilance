@@ -420,13 +420,21 @@ try {
     card({ entity: hero, layout }, null, null, 430);
   } else if (page === "outre-mer") {
     // Ce que la métropole ne montre jamais : une silhouette dessinée, le
-    // violet d'un confinement, et une alerte cyclonique en cours.
-    stage.style.gridTemplateColumns = "330px 330px";
+    // violet d'un confinement, et une alerte cyclonique en cours. Trois
+    // territoires côte à côte, de la même hauteur : la page se photographie
+    // d'un bloc, sans rien couper.
+    stage.style.gridTemplateColumns = "300px 300px 300px";
     stage.style.alignItems = "start";
-    card({ entity: omCyclone, periods: "today" }, "La Réunion — alerte cyclonique orange", HEX.orange, 330);
-    card({ entity: omPurple, periods: "today" }, "Guadeloupe — violet, confinez-vous", "#903078", 330);
-    card({ entity: omCalm, periods: "today" }, "Mayotte — rien à signaler", HEX.green, 330);
-    card({ entity: omCyclone, periods: "today", layout: "compact" }, "compact — pour empiler des territoires", null, 330);
+    card({ entity: omCyclone, periods: "today" }, "La Réunion — alerte cyclonique orange", HEX.orange, 300);
+    card({ entity: omPurple, periods: "today" }, "Guadeloupe — violet, confinez-vous", "#903078", 300);
+    card({ entity: omCalm, periods: "today" }, "Mayotte — rien à signaler", HEX.green, 300);
+  } else if (page === "outre-mer-compact") {
+    // La disposition compacte n'affiche aucune carte : c'est son objet, tenir
+    // sur une ligne pour empiler plusieurs territoires.
+    stage.style.gridTemplateColumns = "430px";
+    card({ entity: omCyclone, periods: "today", layout: "compact" }, null, null, 430);
+    card({ entity: omPurple, periods: "today", layout: "compact" }, null, null, 430);
+    card({ entity: omCalm, periods: "today", layout: "compact" }, null, null, 430);
   } else if (page === "outre-mer-chrono") {
     stage.style.gridTemplateColumns = "430px";
     card({ entity: omCyclone, periods: "today", layout: "chronologie" }, null, null, 430);

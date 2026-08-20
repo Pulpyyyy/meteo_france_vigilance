@@ -200,9 +200,17 @@ demandée que si vous suivez des départements métropolitains.
 * **La carte dessine les territoires**, Météo-France ne publiant de vignette
   que pour trois d'entre eux.
 
+La chronologie donne l'heure de l'alerte, comme en métropole :
+
 | Thème clair | Thème sombre |
 |:---:|:---:|
 | <img src="images/outre-mer-chrono-light.png" alt="Chronologie d'une alerte cyclonique, thème clair" width="380"> | <img src="images/outre-mer-chrono-dark.png" alt="Chronologie d'une alerte cyclonique, thème sombre" width="380"> |
+
+Et la disposition compacte empile les territoires sur une ligne chacun :
+
+| Thème clair | Thème sombre |
+|:---:|:---:|
+| <img src="images/outre-mer-compact-light.png" alt="Trois territoires en disposition compacte, thème clair" width="380"> | <img src="images/outre-mer-compact-dark.png" alt="Trois territoires en disposition compacte, thème sombre" width="380"> |
 
 ### Attributs propres aux territoires
 
