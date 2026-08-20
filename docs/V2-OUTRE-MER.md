@@ -246,6 +246,29 @@ carte nationale place la Corse. Les contours d'OpenStreetMap demandent une
 précaution — la recherche par nom renvoie les **eaux territoriales**, pas le
 littoral ; c'est le contour de type « île » qu'il faut retenir.
 
+## La vignette des deux jours
+
+Retour du forum : la fiche d'une vignette est haute parce que l'image est
+**carrée**. Toutes le sont — 500 × 500 pour la métropole, 250 × 250 outre-mer.
+
+Météo France en publie pourtant une autre, `vignettenationale-J-et-J1`, en
+**1000 × 500** : les deux échéances côte à côte, dans le rapport large qui
+donnerait une fiche compacte. L'adresse est vérifiée — elle répond « clé
+absente » là où les graphies voisines répondent « inconnu ».
+
+Mais elle porte **les deux jours dans une seule image**. L'adopter n'est pas
+un changement d'adresse : il faut décider ce qu'on en fait.
+
+* Une entité de plus, à côté des deux existantes : l'utilisateur choisit celle
+  qu'il affiche, rien ne casse, et la carte peut la préférer quand la place
+  manque. C'est la voie la plus sûre.
+* Ou remplacer les deux vignettes par celle-ci, en rognant la moitié utile
+  pour chaque échéance. Une seule requête au lieu de deux, mais un rognage à
+  l'aveugle — la position exacte de la césure n'est pas documentée, et rien ne
+  garantit qu'elle reste au milieu.
+
+À trancher après avoir vu ce que l'endpoint renvoie réellement.
+
 ## Le format des vignettes
 
 Retour du forum (WarC0zes) : la fiche qui s'ouvre au clic sur une vignette est
