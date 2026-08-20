@@ -183,6 +183,23 @@ hors le renommage `camera.` → `image.`.
   annoncer clairement dans les notes de version, avec un rappel dans le
   README pour les tableaux de bord qui les référencent en dur.
 
+## Le vocabulaire des phénomènes
+
+Les identifiants diffèrent d'un bassin à l'autre, mais la plupart des
+phénomènes désignent la même chose qu'en métropole : le vent et les
+vagues-submersion gardent donc les mêmes `slug`, quel que soit le numéro que
+leur donne le service. Une automatisation écrite pour la métropole continue
+d'y retrouver ses petits.
+
+Deux exceptions, qui portent leur propre `slug` :
+
+* **`cyclone`**, que la métropole ne connaît pas ;
+* **`rain_thunderstorm`** — « Fortes pluies et orages » outre-mer recouvre à
+  lui seul ce que la métropole sépare en `rain` (pluie-inondation) et
+  `thunderstorm` (orages). Lui donner `rain` aurait été commode, mais faux :
+  quelqu'un qui filtre sur `rain` croirait exclure les orages. Le composant
+  suit ici la lettre du descriptif technique plutôt que la commodité.
+
 ## Le format des vignettes
 
 Retour du forum (WarC0zes) : la fiche qui s'ouvre au clic sur une vignette est

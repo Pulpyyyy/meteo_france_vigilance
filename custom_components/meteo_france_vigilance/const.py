@@ -142,20 +142,29 @@ BASINS: Final[dict[str, dict[str, str]]] = {
     "VIGI978-977": {"name": "Saint-Martin et Saint-Barthélemy", "scale": SCALE_ANTILLES},
 }
 
-# Un phénomène outre-mer retrouve le `slug` de son équivalent métropolitain :
-# la carte et les modèles Jinja n'ont ainsi qu'un vocabulaire à connaître.
-# « Fortes pluies et orages » recouvre les deux phénomènes que la métropole
-# sépare (pluie-inondation et orages) : on retient `rain`, et le libellé du
-# bassin dit le reste.
+# Un phénomène outre-mer retrouve le `slug` de son équivalent métropolitain
+# quand il en a un — le vent et les vagues-submersion sont les mêmes partout.
+# « Fortes pluies et orages » n'en a pas : il recouvre à lui seul ce que la
+# métropole sépare en pluie-inondation et orages. Lui donner `rain` serait
+# commode pour les automations, mais faux — un utilisateur qui filtre sur
+# `rain` croirait exclure les orages. Il porte donc son propre slug.
 PHENOMENA_BY_SCALE: Final[dict[str, dict[int, str]]] = {
-    SCALE_ANTILLES: {1: "wind", 2: "rain", 9: "wave", 10: "cyclone"},
-    SCALE_INDIAN: {1: "wind", 12: "rain", 9: "wave", 10: "cyclone"},
+    SCALE_ANTILLES: {1: "wind", 2: "rain_thunderstorm", 9: "wave", 10: "cyclone"},
+    SCALE_INDIAN: {1: "wind", 12: "rain_thunderstorm", 9: "wave", 10: "cyclone"},
 }
 
-CYCLONE: Final[dict[str, str]] = {
-    "slug": "cyclone",
-    "name": "Cyclone",
-    "icon": "mdi:weather-hurricane",
+# Les phénomènes que l'outre-mer connaît et la métropole non.
+OM_PHENOMENA: Final[dict[str, dict[str, str]]] = {
+    "cyclone": {
+        "slug": "cyclone",
+        "name": "Cyclone",
+        "icon": "mdi:weather-hurricane",
+    },
+    "rain_thunderstorm": {
+        "slug": "rain_thunderstorm",
+        "name": "Fortes pluies et orages",
+        "icon": "mdi:weather-lightning-rainy",
+    },
 }
 
 # Normalisation d'un niveau de bassin vers les quatre couleurs de la
@@ -286,8 +295,8 @@ def scale_phenomenon(scale: str, phenomenon_id: int) -> dict[str, str]:
         return phenomenon(phenomenon_id)
 
     slug = PHENOMENA_BY_SCALE.get(scale, {}).get(phenomenon_id)
-    if slug == CYCLONE["slug"]:
-        return CYCLONE
+    if slug in OM_PHENOMENA:
+        return OM_PHENOMENA[slug]
     for entry in PHENOMENA.values():
         if entry["slug"] == slug:
             return entry
