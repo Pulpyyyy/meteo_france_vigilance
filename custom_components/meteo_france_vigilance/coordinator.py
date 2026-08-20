@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 import logging
 import random
-from typing import Any
+from typing import Any, Final
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant
@@ -30,6 +30,7 @@ from .const import (
     CONF_API_KEY,
     CONF_DEPARTMENTS,
     CONF_MAPS,
+    COMBINED_MAP,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -43,6 +44,10 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Ce que le coordinateur télécharge en images : les deux échéances, et la
+# vignette qui les porte toutes deux.
+MAP_KEYS: Final[tuple[str, ...]] = (*PERIODS, COMBINED_MAP)
 
 
 @dataclass(slots=True)
@@ -81,10 +86,11 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
         self.api = VigilanceApi(
             async_get_clientsession(hass), options[CONF_API_KEY]
         )
+        # Les deux vignettes des échéances, plus celle qui les réunit.
         # Conservées d'une mise à jour à l'autre : une vignette absente doit
-        # laisser la précédente affichée, pas vider la caméra.
-        self._maps: dict[str, bytes | None] = {p: None for p in PERIODS}
-        self._maps_updated: dict[str, datetime | None] = {p: None for p in PERIODS}
+        # laisser la précédente affichée, pas vider l'entité.
+        self._maps: dict[str, bytes | None] = {p: None for p in MAP_KEYS}
+        self._maps_updated: dict[str, datetime | None] = {p: None for p in MAP_KEYS}
         self._maps_stamp: str | None = None
         # Rattrapage d'un bulletin périmé — voir _schedule_expired_retry.
         self._expired_retry_unsub: CALLBACK_TYPE | None = None
@@ -243,7 +249,7 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
     async def _async_refresh_maps(self, product: dict[str, Any]) -> None:
         """Retélécharger les PNG uniquement si le bulletin a été réémis."""
         stamp = str(product.get("update_time") or "")
-        missing = [p for p in PERIODS if self._maps.get(p) is None]
+        missing = [p for p in MAP_KEYS if self._maps.get(p) is None]
         if stamp and stamp == self._maps_stamp and not missing:
             return
 
@@ -265,7 +271,7 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
             self._maps_updated[period] = dt_util.utcnow()
             return True
 
-        fetched = await asyncio.gather(*(_fetch(period) for period in PERIODS))
+        fetched = await asyncio.gather(*(_fetch(key) for key in MAP_KEYS))
         if all(fetched):
             self._maps_stamp = stamp
 

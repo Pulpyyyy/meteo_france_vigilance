@@ -24,6 +24,11 @@ API_BULLETIN: Final = f"{API_BASE}/cartevigilance/encours"
 API_MAP: Final = {
     "today": f"{API_BASE}/vignettenationale-J/encours",
     "tomorrow": f"{API_BASE}/vignettenationale-J1/encours",
+    # Les deux échéances côte à côte, en 1000 x 500. Deux fois plus large que
+    # haute, là où les autres sont carrées : c'est la seule que Météo France
+    # publie dans ce format, et celle qui tient dans une fiche sans qu'on ait
+    # à faire défiler.
+    "both": f"{API_BASE}/vignettenationale-J-et-J1/encours",
 }
 # L'API répond régulièrement 502 / 200-vide quelques secondes après une bascule
 # de bulletin. C'est ce que la boucle `while true` du capteur command_line
@@ -86,6 +91,11 @@ JSMODULES: Final[list[dict[str, str]]] = [
 # Clé interne → `echeance` de l'API. L'ordre compte : c'est celui des entités
 # créées et celui des colonnes de la carte.
 PERIODS: Final[dict[str, str]] = {"today": "J", "tomorrow": "J1"}
+
+# La vignette qui porte les deux échéances. Elle n'est pas une période — aucun
+# capteur ne lui correspond — mais elle se télécharge et se publie comme les
+# autres images.
+COMBINED_MAP: Final = "both"
 
 # ── Phénomènes ────────────────────────────────────────────────────────────────
 # Identifiants de la vigilance V6. `slug` est stable et destiné aux automations

@@ -112,6 +112,9 @@
       },
       "map_tomorrow": {
         "name": "Carte demain"
+      },
+      "map_both": {
+        "name": "Carte deux jours"
       }
     }
   },

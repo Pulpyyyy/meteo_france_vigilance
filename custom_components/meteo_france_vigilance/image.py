@@ -24,7 +24,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, PERIODS
+from .const import COMBINED_MAP, DOMAIN, PERIODS
 from .coordinator import VigilanceCoordinator
 from .entity import VigilanceEntity, hub_device_info
 
@@ -43,7 +43,10 @@ async def async_setup_entry(
     coordinator = entry.runtime_data.metropole
     if coordinator is None or not coordinator.maps_enabled:
         return
-    async_add_entities(VigilanceImage(hass, coordinator, period) for period in PERIODS)
+    async_add_entities(
+        VigilanceImage(hass, coordinator, key)
+        for key in (*PERIODS, COMBINED_MAP)
+    )
 
 
 class VigilanceImage(VigilanceEntity, ImageEntity):

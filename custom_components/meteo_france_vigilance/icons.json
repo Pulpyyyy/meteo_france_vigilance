@@ -6,6 +6,9 @@
       },
       "map_tomorrow": {
         "default": "mdi:map-clock-outline"
+      },
+      "map_both": {
+        "default": "mdi:map-legend"
       }
     }
   },

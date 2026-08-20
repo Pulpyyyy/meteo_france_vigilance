@@ -267,7 +267,16 @@ un changement d'adresse : il faut décider ce qu'on en fait.
   l'aveugle — la position exacte de la césure n'est pas documentée, et rien ne
   garantit qu'elle reste au milieu.
 
-À trancher après avoir vu ce que l'endpoint renvoie réellement.
+C'est la première voie qui est retenue : une entité de plus,
+`image.…_carte_deux_jours`, à côté des deux existantes. Rien ne change pour
+qui utilise déjà le composant ; celui que la hauteur d'une fiche carrée gêne
+affiche celle-ci à la place.
+
+Elle est téléchargée avec les autres, dans le même cycle et sous la même
+condition — les vignettes ne sont reprises que si le bulletin a été réémis.
+Et elle ne crée aucun capteur : les périodes qui définissent les capteurs
+restent « aujourd'hui » et « demain », la vignette des deux jours n'en est pas
+une.
 
 ## Le format des vignettes
 

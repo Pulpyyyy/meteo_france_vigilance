@@ -112,6 +112,9 @@
       },
       "map_tomorrow": {
         "name": "Map tomorrow"
+      },
+      "map_both": {
+        "name": "Two-day map"
       }
     }
   },
