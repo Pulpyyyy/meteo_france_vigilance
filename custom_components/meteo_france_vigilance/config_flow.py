@@ -49,13 +49,18 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# Les départements proposés, dans l'ordre des codes. « FRA » n'y est pas : le
-# national est déjà porté par les deux cartes, et un capteur « France » ne
-# dirait rien d'actionnable.
+# Les départements proposés, dans l'ordre des codes. En sont exclus :
+# « FRA » — le national est déjà porté par les deux cartes, un capteur
+# « France » ne dirait rien d'actionnable ; « 99 » (Andorre) — retiré du
+# bulletin par Météo France le 29 juin 2026 ; l'outre-mer (971 à 976) — la
+# vigilance des DROM est un produit Météo France distinct, que DPVigilance
+# métropole ne publie pas. Tout code exclu reste saisissable à la main, et
+# les entités existantes gardent leur nom.
+_NOT_OFFERED = {"FRA", "99", "971", "972", "973", "974", "975", "976"}
 DEPARTMENT_OPTIONS: list[SelectOptionDict] = [
     SelectOptionDict(value=code, label=f"{code} — {name}")
     for code, name in sorted(DEPARTMENTS.items())
-    if code != "FRA"
+    if code not in _NOT_OFFERED
 ]
 
 DEPARTMENT_SELECTOR = SelectSelector(

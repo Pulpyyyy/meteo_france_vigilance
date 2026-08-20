@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.1.1 — 2026-08-20
+
+### Corrections
+
+- **Pulpyyyy crédité comme développeur** de l'intégration (un identifiant
+  personnel apparaissait à la place).
+- **Andorre retiré de la liste des départements proposés** : Météo France ne
+  le publie plus depuis le 29 juin 2026. Le code `99` reste saisissable à la
+  main si l'API le réintroduit un jour, et les installations qui le suivaient
+  gardent leurs entités.
+- **L'outre-mer retiré de la liste également** (971 à 976) : la vigilance des
+  DROM est publiée par un service Météo France distinct, que cette intégration
+  n'interroge pas — les choisir ne pouvait qu'aboutir à une erreur à la
+  configuration.
+
+### Améliorations
+
+- **La hauteur de la carte se règle enfin** dans les tableaux de bord en
+  sections : la poignée de redimensionnement verticale fonctionne, comme sur
+  les cartes d'origine.
+- **Nouvelle option « Largeur maxi de la carte »** (`map_width`) pour réduire
+  la vignette France — et avec elle la hauteur totale de la carte.
+
 ## 1.1.0 — 2026-08-18
 
 ### Nouveautés

@@ -212,7 +212,11 @@ DEPARTMENTS: Final[dict[str, str]] = {
     "93": "Seine-Saint-Denis",
     "94": "Val-de-Marne",
     "95": "Val-d'Oise",
+    # Retiré du bulletin par Météo France le 29 juin 2026 ; conservé ici
+    # pour nommer les entités des installations qui le suivaient déjà.
     "99": "Andorre",
+    # L'outre-mer relève du produit « Vigilance Outre-Mer », distinct de
+    # DPVigilance métropole : absent du bulletin lu ici, conservé pour nommer.
     "971": "Guadeloupe",
     "972": "Martinique",
     "973": "Guyane",

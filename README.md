@@ -14,7 +14,7 @@ La carte de vigilance de Météo-France dans Home Assistant (API publique
 
 Remplace le montage à base de `command_line` + `jq` + `local_file` +
 automatisation de rafraîchissement partagé sur le forum HACF : une entrée de
-configuration, deux capteurs par département, deux caméras, une comosition de cartes lovelace.
+configuration, deux capteurs par département, deux caméras, une composition de cartes Lovelace.
 
 | Thème clair | Thème sombre |
 |:---:|:---:|
@@ -30,7 +30,7 @@ configuration, deux capteurs par département, deux caméras, une comosition de 
   couleur de vigilance (`green`, `yellow`, `orange`, `red`), traduite par Home
   Assistant ; les phénomènes, leurs créneaux horaires et le commentaire
   national sont en attributs.
-- **Deux carte de France** pour les données nationales J et J+1, gardées en mémoire —
+- **Deux cartes de France** pour les données nationales J et J+1, gardées en mémoire —
   rien n'est écrit dans `www/`.
 - **Carte Lovelace embarquée** : servie et enregistrée automatiquement par le
   composant, aucune ressource à déclarer, aucune dépendance (ni mushroom, ni
@@ -117,7 +117,7 @@ change via **Reconfigurer**).
 
 | Option | Défaut | Rôle |
 |---|---|---|
-| Départements | — | Codes suivis. Les zones littorales se saisissent à la main (`3010`, `6410`…) |
+| Départements | — | Codes suivis. Les zones littorales se saisissent à la main (`3010`, `6410`…). Andorre et l'outre-mer, hors du bulletin métropole, ne sont plus proposés |
 | Cartes nationales | activé | Télécharge les deux images de la carte de France |
 | Intervalle | 30 min | De 5 à 720 min. Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps |
 
@@ -256,6 +256,7 @@ Les deux axes sont indépendants — seize combinaisons.
 | `hide_green` | `false` | Ne montrer que ce qui n'est pas vert |
 | `alert_only` | `false` | La carte disparaît du tableau de bord tant que rien n'atteint l'orange |
 | `hide_map_inset` | `false` | Masque le libellé « Paris - Petite couronne » de la vignette |
+| `map_width` | — | Largeur maxi de la vignette, en pixels — la hauteur de la carte se réduit d'autant |
 | `tap_action` | `more-info` | Action au clic |
 | `hold_action` | `more-info` | Action à l'appui long |
 | `double_tap_action` | `none` | Action au double clic |
@@ -275,6 +276,11 @@ tap_action:
   action: navigate
   navigation_path: /lovelace/meteo
 ```
+
+> **Fiche caméra trop grande ?** Le `more-info` d'une caméra est la boîte de
+> dialogue standard de Home Assistant : sa taille ne se règle pas depuis la
+> carte. Pour un aperçu compact, pointez `tap_action` vers une popup
+> (browser_mod…) ou une vue dédiée — ou réduisez la vignette avec `map_width`.
 
 ### Éditeur graphique
 

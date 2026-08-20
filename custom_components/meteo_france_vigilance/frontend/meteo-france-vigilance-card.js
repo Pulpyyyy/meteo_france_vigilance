@@ -140,6 +140,7 @@ const WORDS = {
     hideGreen: "Masquer les phénomènes verts",
     alertOnly: "Masquer la carte tant que rien n'est signalé",
     hideMapInset: "Masquer le libellé « Paris - Petite couronne »",
+    mapWidth: "Largeur maxi de la carte (px)",
     tapAction: "Au clic",
     holdAction: "À l'appui long",
     doubleTapAction: "Au double clic",
@@ -185,6 +186,7 @@ const WORDS = {
     hideGreen: "Hide green phenomena",
     alertOnly: "Hide the card while nothing is reported",
     hideMapInset: "Hide the “Paris - Petite couronne” label",
+    mapWidth: "Map max width (px)",
     tapAction: "Tap action",
     holdAction: "Hold action",
     doubleTapAction: "Double tap action",
@@ -363,7 +365,9 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       focus: this._config.show_map ? 6 : 2,
       duo: this._config.show_map ? 5 : 2,
     }[this._config.layout];
-    return { columns: 12, min_columns: 6, rows };
+    // `rows` n'est qu'une hauteur proposée : min/max activent la poignée de
+    // redimensionnement verticale des vues « sections », qui restait inerte.
+    return { columns: 12, min_columns: 6, rows, min_rows: 1, max_rows: 12 };
   }
 
   // ── Résolution des entités ──────────────────────────────────────────────
@@ -449,6 +453,15 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     // main comme thème suivant le système. La carte n'a qu'à le recopier :
     // c'est lui qui allume le calque d'encre de la vignette.
     this._parts.card.classList.toggle("dark", Boolean(this._hass.themes?.darkMode));
+
+    if (this._config.map_width) {
+      this._parts.card.style.setProperty(
+        "--mfv-map-width",
+        `${Number(this._config.map_width)}px`
+      );
+    } else {
+      this._parts.card.style.removeProperty("--mfv-map-width");
+    }
 
     const resolved = this._resolve();
     if (!resolved) {
@@ -1110,7 +1123,13 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       .icon-row ha-icon { --mdc-icon-size: 18px; }
       /* isolation enferme le mélange du calque d'encre ci-dessous : sans elle,
          mix-blend-mode irait chercher le fond du tableau de bord. */
-      .map-wrap { position: relative; isolation: isolate; }
+      .map-wrap {
+        position: relative; isolation: isolate;
+        /* map_width : l'image et son calque d'encre se réduisent ensemble,
+           le ratio est conservé — la hauteur de la carte en profite. */
+        max-width: var(--mfv-map-width, none);
+        margin-inline: auto;
+      }
       img.map {
         width: 100%; display: block;
         border-radius: var(--ha-card-border-radius, 12px);
@@ -1362,6 +1381,12 @@ class MeteoFranceVigilanceCardEditor extends HTMLElement {
           { name: "hide_map_inset", selector: { boolean: {} } },
         ],
       },
+      {
+        name: "map_width",
+        selector: {
+          number: { min: 100, max: 500, step: 10, mode: "box", unit_of_measurement: "px" },
+        },
+      },
       // `ui_action` est le sélecteur d'action du frontend : on hérite de son
       // formulaire complet — service, cible, navigation, URL — sans le récrire.
       // La liste est restreinte à ce que la carte sait vraiment faire : offrir
@@ -1432,6 +1457,7 @@ class MeteoFranceVigilanceCardEditor extends HTMLElement {
           hide_green: t.hideGreen,
           alert_only: t.alertOnly,
           hide_map_inset: t.hideMapInset,
+          map_width: t.mapWidth,
           tap_action: t.tapAction,
           hold_action: t.holdAction,
           double_tap_action: t.doubleTapAction,
