@@ -24,8 +24,15 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import COLOR_SLUGS, PERIODS, department_name
+from .const import (
+    COLOR_SLUGS,
+    CYCLONE_PHASE_SLUGS,
+    PERIODS,
+    basin_has_cyclone,
+    department_name,
+)
 from .coordinator import VigilanceCoordinator
+from .coordinator_om import OM_PERIOD, VigilanceOmCoordinator
 from .entity import VigilanceEntity, department_device_info
 
 SENSORS: tuple[SensorEntityDescription, ...] = tuple(
@@ -39,18 +46,50 @@ SENSORS: tuple[SensorEntityDescription, ...] = tuple(
 )
 
 
+# L'outre-mer ne publie pas deux échéances comme la métropole : sa chronologie
+# est continue, et tout est rangé sous « aujourd'hui ».
+OM_SENSORS: tuple[SensorEntityDescription, ...] = tuple(
+    description for description in SENSORS if description.key == OM_PERIOD
+)
+
+CYCLONE_SENSOR = SensorEntityDescription(
+    key="cyclone_phase",
+    translation_key="cyclone_phase",
+    device_class=SensorDeviceClass.ENUM,
+    options=CYCLONE_PHASE_SLUGS,
+)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Créer les capteurs de chaque département suivi."""
-    coordinator: VigilanceCoordinator = entry.runtime_data
-    async_add_entities(
-        VigilanceSensor(coordinator, code, description)
-        for code in coordinator.departments
-        for description in SENSORS
-    )
+    """Créer les capteurs de chaque domaine suivi, métropole et outre-mer."""
+    runtime = entry.runtime_data
+    entities: list[SensorEntity] = []
+
+    if runtime.metropole:
+        entities += [
+            VigilanceSensor(runtime.metropole, code, description)
+            for code in runtime.metropole.departments
+            for description in SENSORS
+        ]
+
+    if runtime.outre_mer:
+        for code in runtime.outre_mer.basins:
+            entities += [
+                VigilanceSensor(runtime.outre_mer, code, description)
+                for description in OM_SENSORS
+            ]
+            # La phase cyclonique est une dimension à part de l'intensité : un
+            # « orange hachuré » est une vigilance orange doublée d'une menace
+            # cyclonique. Elle n'existe que là où le bassin la connaît — ni en
+            # métropole, ni en Guyane.
+            if basin_has_cyclone(code):
+                entities.append(CyclonePhaseSensor(runtime.outre_mer, code))
+
+    async_add_entities(entities)
 
 
 class VigilanceSensor(VigilanceEntity, SensorEntity):
@@ -68,7 +107,7 @@ class VigilanceSensor(VigilanceEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator: VigilanceCoordinator,
+        coordinator: VigilanceCoordinator | VigilanceOmCoordinator,
         code: str,
         description: SensorEntityDescription,
     ) -> None:
@@ -137,3 +176,43 @@ class VigilanceSensor(VigilanceEntity, SensorEntity):
         for period in PERIODS:
             attributes[period] = departments.get(period, {}).get("phenomena", [])
         return attributes
+
+
+class CyclonePhaseSensor(VigilanceEntity, SensorEntity):
+    """La phase d'alerte cyclonique d'un bassin d'outre-mer.
+
+    Séparée de la couleur de vigilance parce qu'elle en est indépendante :
+    dans l'océan Indien, « orange hachuré » est une vigilance orange doublée
+    d'une menace cyclonique, et les deux informations méritent chacune leur
+    déclencheur. Les phases sont un dispositif préfectoral, pas une donnée
+    d'API : leur liste est donc écrite une fois pour toutes.
+    """
+
+    entity_description = CYCLONE_SENSOR
+    _attr_icon = "mdi:weather-hurricane"
+
+    def __init__(self, coordinator: VigilanceOmCoordinator, code: str) -> None:
+        """Nommer le capteur et le rattacher à l'appareil de son bassin."""
+        super().__init__(coordinator)
+        self.entity_description = CYCLONE_SENSOR
+        self._code = code
+        self._attr_unique_id = f"{coordinator.entry.entry_id}_{code}_cyclone_phase"
+        self._attr_device_info = department_device_info(coordinator.entry, code)
+
+    @property
+    def _state(self) -> dict[str, Any]:
+        """L'état du bassin, tel que le coordinateur l'a mis en forme."""
+        if not self.coordinator.data:
+            return {}
+        return self.coordinator.data.departments.get(self._code, {}).get(OM_PERIOD, {})
+
+    @property
+    def available(self) -> bool:
+        """Indisponible tant que le bassin n'a pas répondu."""
+        return super().available and bool(self._state)
+
+    @property
+    def native_value(self) -> str | None:
+        """La phase en cours, « none » quand aucune n'est déclarée."""
+        return self._state.get("cyclone_phase")
+

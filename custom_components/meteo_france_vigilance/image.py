@@ -34,9 +34,14 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Créer les images, sauf si les cartes ont été désactivées."""
-    coordinator: VigilanceCoordinator = entry.runtime_data
-    if not coordinator.maps_enabled:
+    """Créer les images, sauf si les cartes ont été désactivées.
+
+    Les vignettes sont celles de la carte nationale : elles ne concernent que
+    la métropole, et n'existent donc pas pour une entrée qui ne suit que des
+    bassins d'outre-mer.
+    """
+    coordinator = entry.runtime_data.metropole
+    if coordinator is None or not coordinator.maps_enabled:
         return
     async_add_entities(VigilanceImage(hass, coordinator, period) for period in PERIODS)
 

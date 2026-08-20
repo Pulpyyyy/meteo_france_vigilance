@@ -85,6 +85,17 @@
           "orange": "Orange",
           "red": "Red"
         }
+      },
+      "cyclone_phase": {
+        "name": "Cyclone phase",
+        "state": {
+          "none": "None",
+          "yellow": "Yellow watch",
+          "orange": "Orange alert",
+          "red": "Red alert",
+          "purple": "Purple alert",
+          "grey": "Recovery phase"
+        }
       }
     },
     "image": {

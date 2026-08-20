@@ -32,6 +32,7 @@ from .const import (
     CYCLONE_PHASES,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    basin_has_cyclone,
     basin_scale,
     scale_color,
     scale_phenomenon,
@@ -170,7 +171,7 @@ class VigilanceOmCoordinator(DataUpdateCoordinator[VigilanceData]):
                 "comment": _comment(payload.get("text")),
                 "phenomena": phenomena,
                 "alerts": [p for p in phenomena if p["color"] in ("orange", "red")],
-                "cyclone_phase": self._cyclone_phase(scale, phenomena),
+                "cyclone_phase": self._cyclone_phase(code, scale, phenomena),
             }
         }
 
@@ -225,19 +226,22 @@ class VigilanceOmCoordinator(DataUpdateCoordinator[VigilanceData]):
         }
 
     @staticmethod
-    def _cyclone_phase(scale: str, phenomena: list[dict[str, Any]]) -> str | None:
+    def _cyclone_phase(
+        code: str, scale: str, phenomena: list[dict[str, Any]]
+    ) -> str | None:
         """La phase cyclonique du bassin, si le bassin en connaît une.
 
         Distincte de l'intensité : dans l'océan Indien, « orange hachuré » est
         une vigilance orange doublée d'une menace cyclonique. C'est ce que
         publiera un capteur à part.
         """
-        if scale not in CYCLONE_PHASES:
+        if not basin_has_cyclone(code):
             return None
+        phases = CYCLONE_PHASES.get(scale, {})
         cyclone = next((p for p in phenomena if p["slug"] == "cyclone"), None)
-        if not cyclone or cyclone["color_id"] not in CYCLONE_PHASES[scale]:
+        if not cyclone:
             return "none"
-        return cyclone["color_native"] or cyclone["color"] or "none"
+        return phases.get(cyclone["color_id"], "none")
 
 
 def _moment(value: Any) -> datetime | None:

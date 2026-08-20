@@ -85,6 +85,17 @@
           "orange": "Orange",
           "red": "Rouge"
         }
+      },
+      "cyclone_phase": {
+        "name": "Phase cyclonique",
+        "state": {
+          "none": "Aucune",
+          "yellow": "Vigilance jaune",
+          "orange": "Alerte orange",
+          "red": "Alerte rouge",
+          "purple": "Alerte violette",
+          "grey": "Phase de sauvegarde"
+        }
       }
     },
     "image": {

@@ -136,7 +136,9 @@ SCALE_INDIAN: Final = "indian_ocean"
 BASINS: Final[dict[str, dict[str, str]]] = {
     "VIGI971": {"name": "Guadeloupe", "scale": SCALE_ANTILLES},
     "VIGI972": {"name": "Martinique", "scale": SCALE_ANTILLES},
-    "VIGI973": {"name": "Guyane", "scale": SCALE_ANTILLES},
+    # La Guyane suit l'échelle antillaise, mais son dictionnaire ne publie pas
+    # de phénomène « cyclone » : elle est hors de la zone d'aléa cyclonique.
+    "VIGI973": {"name": "Guyane", "scale": SCALE_ANTILLES, "cyclone": False},
     "VIGI974": {"name": "La Réunion", "scale": SCALE_INDIAN},
     "VIGI976": {"name": "Mayotte", "scale": SCALE_INDIAN},
     "VIGI978-977": {"name": "Saint-Martin et Saint-Barthélemy", "scale": SCALE_ANTILLES},
@@ -226,9 +228,28 @@ NATIVE_HEX: Final[dict[str, str]] = {
 # Phase cyclonique, publiée en capteur séparé là où le bassin la connaît.
 # C'est un dispositif préfectoral, pas une donnée d'API : l'énumération est
 # donc close, et écrite ici une fois pour toutes.
-CYCLONE_PHASES: Final[dict[str, list[int]]] = {
-    SCALE_ANTILLES: [3, 4, 5, 6],
-    SCALE_INDIAN: [3, 4, 6, 7, 8, 9, 10],
+# Chaque niveau cyclonique d'un bassin, et la phase qu'il nomme. Les valeurs
+# sont celles de CYCLONE_PHASE_SLUGS, et rien d'autre : la liste des états
+# d'un capteur d'énumération est écrite dans le registre de Home Assistant,
+# qui refuse ensuite tout état absent de cette liste.
+CYCLONE_PHASES: Final[dict[str, dict[int, str]]] = {
+    SCALE_ANTILLES: {
+        3: "orange",
+        4: "red",
+        5: "purple",
+        6: "grey",
+    },
+    SCALE_INDIAN: {
+        # Les niveaux « hachurés » disent une vigilance doublée d'une menace
+        # cyclonique : c'est bien une phase d'alerte, à son niveau.
+        3: "orange",
+        4: "red",
+        6: "grey",  # bleu-gris : la phase de sauvegarde, après le passage
+        7: "yellow",
+        8: "orange",
+        9: "red",
+        10: "purple",
+    },
 }
 CYCLONE_PHASE_SLUGS: Final[list[str]] = [
     "none",
@@ -238,6 +259,18 @@ CYCLONE_PHASE_SLUGS: Final[list[str]] = [
     "purple",
     "grey",
 ]
+
+
+def basin_has_cyclone(domain_id: str) -> bool:
+    """Si le bassin connaît l'alerte cyclonique.
+
+    Tous la connaissent sauf la Guyane, que Météo France n'inclut pas dans le
+    dispositif — publier un capteur de phase toujours vide y serait un défaut.
+    """
+    basin = BASINS.get(domain_id)
+    if not basin:
+        return False
+    return bool(basin.get("cyclone", True)) and basin["scale"] in CYCLONE_PHASES
 
 
 def basin_scale(domain_id: str) -> str:
