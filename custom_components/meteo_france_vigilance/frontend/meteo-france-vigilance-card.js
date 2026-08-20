@@ -1,7 +1,7 @@
 /*!
- * meteo-france-vigilance-card — la vigilance d'un département, aujourd'hui et
- * demain : la vignette nationale, la couleur du département, et les phénomènes
- * qui la justifient.
+ * meteo-france-vigilance-card — la vigilance d'un département ou d'un
+ * territoire d'outre-mer, aujourd'hui et demain : la carte, la couleur du
+ * domaine suivi, et les phénomènes qui la justifient.
  *
  * Remplace l'empilement qui rendait ce même écran : deux `picture-entity` avec
  * leur condition de visibilité, un `auto-entities` piloté par un modèle Jinja
@@ -158,7 +158,8 @@ const WORDS = {
     titleFor: "Vigilance %s",
     cardName: "Vigilance Météo France",
     cardDescription:
-      "Vigilance d'un département : carte nationale, couleur et phénomènes, aujourd'hui et demain.",
+      "Vigilance d'un département ou d'un territoire d'outre-mer : carte, "
+      + "couleur et phénomènes, aujourd'hui et demain.",
     loaded: "chargée",
     entity: "Capteur de vigilance",
     title: "Titre",
@@ -177,9 +178,9 @@ const WORDS = {
     holdAction: "À l'appui long",
     doubleTapAction: "Au double clic",
     layoutHint: {
-      duo: "Deux colonnes, aujourd'hui et demain : chacune sa vignette nationale et ses phénomènes.",
-      focus: "Une seule grande vignette, aujourd'hui, nom et niveau en surimpression. Demain tient sur une ligne.",
-      compact: "Aucune vignette : une ligne par jour, icônes des phénomènes à droite. Pour empiler des départements.",
+      duo: "Deux colonnes, aujourd'hui et demain : chacune sa carte et ses phénomènes.",
+      focus: "Une seule grande carte, aujourd'hui, nom et niveau en surimpression. Demain tient sur une ligne.",
+      compact: "Aucune carte : une ligne par jour, icônes des phénomènes à droite. Pour empiler des départements ou des territoires.",
       chronologie: "Aucune vignette : une barre de 24 h par phénomène, colorée aux heures concernées.",
     },
     themeHint: {
@@ -204,7 +205,8 @@ const WORDS = {
     titleFor: "%s vigilance",
     cardName: "Météo-France Vigilance",
     cardDescription:
-      "One department's vigilance: national map, level and phenomena, today and tomorrow.",
+      "Vigilance for one mainland department or overseas territory: map, level "
+      + "and phenomena, today and tomorrow.",
     loaded: "loaded",
     entity: "Vigilance sensor",
     title: "Title",
@@ -225,7 +227,7 @@ const WORDS = {
     layoutHint: {
       duo: "Two columns, today and tomorrow: each with its national map and its phenomena.",
       focus: "One large map, today, name and level overlaid. Tomorrow fits on a single line.",
-      compact: "No map: one line per day, phenomenon icons on the right. For stacking departments.",
+      compact: "No map: one line per day, phenomenon icons on the right. For stacking departments or territories.",
       chronologie: "No map: a 24-hour bar per phenomenon, coloured over the hours concerned.",
     },
     themeHint: {
@@ -497,6 +499,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     } else {
       this._parts.card.style.removeProperty("--mfv-map-width");
     }
+
 
     const resolved = this._resolve();
     if (!resolved) {
@@ -1180,7 +1183,16 @@ class MeteoFranceVigilanceCard extends HTMLElement {
 
   static get styles() {
     return `
-      ha-card { padding: 12px; overflow: hidden; }
+      /* La carte remplit la hauteur que la vue lui accorde — en vue
+         « sections », celle que l'utilisateur règle à la poignée — et son
+         contenu s'y ajuste au lieu de déborder. */
+      ha-card {
+        padding: 12px; overflow: hidden;
+        height: 100%; box-sizing: border-box;
+        display: flex; flex-direction: column;
+      }
+      .body { flex: 1 1 auto; min-height: 0; }
+      .grid, .focus, .compact, .chrono { height: 100%; min-height: 0; }
       .title {
         font-size: var(--ha-card-header-font-size, 24px);
         font-weight: 400;
@@ -1190,7 +1202,17 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       .error { padding: 8px; color: var(--error-color); }
 
       /* ── Blocs communs ──────────────────────────────────────────────── */
-      .period { display: flex; flex-direction: column; gap: 8px; cursor: pointer; }
+      .period {
+        display: flex; flex-direction: column; gap: 8px; cursor: pointer;
+        /* Sans quoi un bloc flex refuse de se réduire sous la taille de son
+           contenu, et la carte déborde au lieu de tenir dans sa hauteur. */
+        min-height: 0;
+      }
+      /* La vignette est la seule à céder de la place : elle prend ce qui
+         reste une fois l'en-tête et les puces servis, et se réduit en gardant
+         son format carré. C'est ce qui évite d'avoir à faire défiler. */
+      .period .map-wrap { flex: 1 1 auto; min-height: 0; }
+      .period .head, .period .chips, .period .comment { flex: 0 0 auto; }
       .head { display: flex; align-items: center; gap: 8px; }
       .dot {
         width: 12px; height: 12px; border-radius: 50%; flex: 0 0 auto;
@@ -1204,24 +1226,31 @@ class MeteoFranceVigilanceCard extends HTMLElement {
          mix-blend-mode irait chercher le fond du tableau de bord. */
       .map-wrap {
         position: relative; isolation: isolate;
-        /* map_width : l'image et son calque d'encre se réduisent ensemble,
-           le ratio est conservé — la hauteur de la carte en profite. */
+        /* La vignette de Météo France est carrée : le conteneur l'est aussi,
+           et se borne en hauteur pour tenir dans la place accordée. Ainsi le
+           masque de l'encart parisien et le calque d'encre du thème sombre,
+           tous deux posés en pourcentages, restent alignés sur l'image. */
+        aspect-ratio: 1 / 1;
+        /* Deux bornes, même effet : l'option map_width de l'utilisateur, et
+           la hauteur que la disposition laisse. La plus contraignante gagne,
+           et le format carré reste tenu. */
         max-width: var(--mfv-map-width, none);
+        max-height: var(--mfv-map-height, none);
         margin-inline: auto;
       }
       /* La silhouette d'un territoire d'outre-mer, dessinée faute de
          vignette officielle. Même encombrement qu'une image, pour que les
          deux dispositions se comportent pareil. */
       svg.shape {
-        width: 100%; display: block;
-        aspect-ratio: 1 / 1;
+        width: 100%; height: 100%; display: block;
         padding: 6px;
         box-sizing: border-box;
       }
       img.map {
-        width: 100%; display: block;
+        width: 100%; height: 100%; display: block;
         border-radius: var(--ha-card-border-radius, 12px);
         background: var(--secondary-background-color);
+        object-fit: contain;
       }
 
       /* ── L'encre de la vignette en thème sombre ──────────────────────────
