@@ -60,21 +60,45 @@ advices, consequences, max_count_items, comments, text, text_avalanche
 Les horodatages sont des entiers Unix, là où DPVigilance publie des chaînes
 ISO 8601 — la conversion est à faire à la lecture.
 
-`warning/dictionary` donne les tables officielles, à reprendre telles quelles
-plutôt qu'à recopier à la main :
+`warning/dictionary` donne les tables officielles — et le relevé bassin par
+bassin révèle le point le plus structurant du chantier : **les tables ne sont
+pas les mêmes d'un bassin à l'autre.**
 
-* **Phénomènes** : 1 Vents Forts · 9 Vagues-submersion · **10 Alerte
-  Cyclonique** · 12 Fortes pluies / Orages. Numérotation distincte de la
-  métropole : le 12 outre-mer correspond au 2 métropolitain, et le 2
-  métropolitain n'existe pas ici.
-* **Couleurs** : 1 vert · 2 jaune · 3 orange · 4 rouge, puis l'échelle
-  cyclonique propre à l'outre-mer — 6 bleu-gris, 7 blanc, 8 orange, 9 rouge,
-  10 violet. La valeur `-1` signale un phénomène sans objet à cet instant.
+Phénomènes, relevés sur l'API :
 
-Les teintes du dictionnaire diffèrent légèrement de celles de la carte
-métropole (`#31aa35` contre `#2e9e37` pour le vert) : garder les nôtres pour
-la cohérence visuelle, et n'utiliser le dictionnaire que pour les libellés et
-la structure.
+| | Antilles (971, 972) | Guyane (973) | Océan Indien (974, 976) |
+|---|---|---|---|
+| 1 | Vents violents | Vents violents | Vents Forts |
+| 2 | Fortes pluies et orages | Fortes pluies et orages | — |
+| 9 | Vagues-submersion | Vagues-submersion | Vagues-submersion |
+| 10 | Cyclone | *(absent)* | Alerte Cyclonique |
+| 12 | — | — | Fortes pluies / Orages |
+
+Les pluies-orages sont donc le **2** aux Antilles et le **12** dans l'océan
+Indien ; la Guyane, sans littoral cyclonique exposé de la même façon, n'a pas
+de phénomène 10.
+
+Couleurs, mêmes divergences :
+
+* **Antilles / Guyane** : 0 bleu · 1 vert · 2 jaune · 3 orange · 4 rouge ·
+  **5 violet** · 6 gris · -1 blanc.
+* **Océan Indien** : 1 vert · 2 jaune · 3 orange hachuré · 4 rouge hachuré ·
+  6 bleu-gris · 7 jaune · 8 orange · 9 rouge · **10 violet**. Les quatre
+  premières valeurs sont la vigilance ordinaire, les suivantes la phase
+  cyclonique — d'où le « hachuré », qui signale une alerte doublée d'une
+  menace cyclonique.
+
+**Conséquence pour le composant** : une table unique de couleurs et de
+phénomènes ne peut pas convenir. Le modèle doit être indexé par bassin, et le
+plus sûr est de lire `warning/dictionary` à l'exécution plutôt que de figer
+des tables qui divergeront. Nos quatre couleurs métropole restent la référence
+visuelle (`#2e9e37` et suivantes) ; les teintes du dictionnaire ne servent
+qu'aux niveaux que la métropole ne connaît pas.
+
+L'état d'un capteur ne peut donc plus être une énumération de quatre valeurs
+communes à tous : soit on ajoute les niveaux outre-mer à l'énumération
+existante, soit on distingue les capteurs métropole des capteurs outre-mer.
+À trancher à l'étape 3.
 
 ## Ce qui change dans le modèle
 
