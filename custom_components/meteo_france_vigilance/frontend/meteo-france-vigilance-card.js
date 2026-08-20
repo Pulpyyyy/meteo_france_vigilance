@@ -1326,10 +1326,17 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       /* La silhouette d'un territoire n'a pas à occuper un carré : la
          Guadeloupe et les îles du Nord y flottent, alors que la Guyane le
          remplit. Une hauteur fixe les met toutes à la même échelle
-         apparente, et laisse la carte garder la hauteur de ses voisines. */
+         apparente, et laisse la carte garder la hauteur de ses voisines.
+
+         Le cadre prend toute la largeur disponible, sans quoi il se
+         resserrerait autour du dessin : le badge, qui se cale sur lui,
+         paraîtrait alors flotter au milieu plutôt que dans le coin. */
       .map-wrap:has(svg.shape) {
         aspect-ratio: auto;
         height: var(--mfv-shape-height, 190px);
+        width: 100%;
+        max-width: none;
+        margin-inline: 0;
         flex: 0 0 auto;
       }
       svg.shape {
