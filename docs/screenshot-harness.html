@@ -402,10 +402,24 @@ const hass = {
 
 const stage = document.getElementById("stage");
 
+/* `?width=auto` laisse la scène et les cartes prendre la largeur de la
+ * fenêtre : c'est ainsi qu'un tableau de bord les pose, et c'est la seule
+ * façon d'éprouver leur comportement dans une colonne étroite. Les captures
+ * de la documentation, elles, gardent des largeurs fixes. */
+const fluide = q.get("width") === "auto";
+if (fluide) {
+  const style = document.createElement("style");
+  style.textContent = "#stage { grid-template-columns: 1fr !important; padding: 10px } .cell { width: auto !important }";
+  document.head.appendChild(style);
+}
+
 function card(config, caption, swatch, width) {
   const cell = document.createElement("div");
   cell.className = "cell";
-  if (width) cell.style.width = width + "px";
+  // `?width=auto` laisse la carte prendre la largeur du conteneur : c'est
+  // ainsi qu'un tableau de bord la pose, et c'est ce qui permet d'éprouver son
+  // comportement dans une colonne étroite.
+  if (width && q.get("width") !== "auto") cell.style.width = width + "px";
   if (caption) {
     const cap = document.createElement("div");
     cap.className = "caption";

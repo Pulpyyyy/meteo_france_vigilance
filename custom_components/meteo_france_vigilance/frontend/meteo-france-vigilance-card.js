@@ -441,15 +441,19 @@ class MeteoFranceVigilanceCard extends HTMLElement {
 
   /** Vues « sections » : la hauteur suit ce que la disposition demande. */
   getGridOptions() {
-    const rows = {
-      compact: 1,
-      chronologie: 4,
-      focus: this._config.show_map ? 6 : 2,
-      duo: this._config.show_map ? 5 : 2,
+    // Ce que la carte demande dépend de ce qu'elle montre : une ligne compacte
+    // se contente d'un quart de vue, une chronologie de deux journées réclame
+    // de la hauteur. `rows` n'est qu'une proposition — min et max activent les
+    // poignées de redimensionnement des vues « sections ».
+    const deux = this._periods().length > 1;
+    const carte = this._config.show_map;
+    const spec = {
+      compact: { rows: deux ? 2 : 1, min_rows: 1, min_columns: 3, columns: 6 },
+      chronologie: { rows: deux ? 8 : 4, min_rows: 3, min_columns: 6, columns: 12 },
+      focus: { rows: carte ? 6 : 2, min_rows: 2, min_columns: 4, columns: 12 },
+      duo: { rows: carte ? 5 : 3, min_rows: 2, min_columns: 4, columns: 12 },
     }[this._config.layout];
-    // `rows` n'est qu'une hauteur proposée : min/max activent la poignée de
-    // redimensionnement verticale des vues « sections », qui restait inerte.
-    return { columns: 12, min_columns: 6, rows, min_rows: 1, max_rows: 12 };
+    return { ...spec, max_rows: 12 };
   }
 
   // ── Résolution des entités ──────────────────────────────────────────────
@@ -1268,18 +1272,34 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       /* La carte remplit la hauteur que la vue lui accorde — en vue
          « sections », celle que l'utilisateur règle à la poignée — et son
          contenu s'y ajuste au lieu de déborder. */
+      :host { display: block; min-width: 0; }
       ha-card {
         padding: 12px; overflow: hidden;
         height: 100%; box-sizing: border-box;
         display: flex; flex-direction: column;
+        /* Sans quoi rien ne se resserre : un élément flex refuse de descendre
+           sous la largeur de son contenu, et la carte déborde des deux côtés
+           dans un panneau latéral ou sur un téléphone. */
+        min-width: 0;
       }
-      .body { flex: 1 1 auto; min-height: 0; }
+      .body { flex: 1 1 auto; min-height: 0; min-width: 0; }
+      /* Sans vignette pour absorber le manque de place, le contenu défile
+         plutôt que d'être coupé : sur une carte d'alerte, ne pas savoir ce
+         qu'on ne voit pas est le pire des défauts. */
+      .layout-chronologie .body, .layout-compact .body {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      .period, .head, .chips, .grid, .focus, .compact, .chrono { min-width: 0; }
       .grid, .focus, .compact, .chrono { height: 100%; min-height: 0; }
       .title {
         font-size: var(--ha-card-header-font-size, 24px);
         font-weight: 400;
         color: var(--ha-card-header-color, var(--primary-text-color));
         padding: 4px 4px 12px;
+        /* « Vigilance Saint-Martin et Saint-Barthélemy » doit pouvoir passer
+           à la ligne plutôt que d'élargir la carte. */
+        overflow-wrap: anywhere;
       }
       .error { padding: 8px; color: var(--error-color); }
 
@@ -1295,14 +1315,30 @@ class MeteoFranceVigilanceCard extends HTMLElement {
          son format carré. C'est ce qui évite d'avoir à faire défiler. */
       .period .map-wrap { flex: 1 1 auto; min-height: 0; }
       .period .head, .period .chips, .period .comment { flex: 0 0 auto; }
-      .head { display: flex; align-items: center; gap: 8px; }
+      .head {
+        display: flex; align-items: center; gap: 8px; min-width: 0;
+        /* Dans une colonne étroite, la ligne passe à deux plutôt que de
+           pousser le niveau hors du cadre. */
+        flex-wrap: wrap; row-gap: 4px;
+      }
+      /* Quand la place manque, le nom du jour cède le premier : la couleur et
+         les phénomènes portent l'information, pas le mot « Aujourd'hui ». */
+      .head .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+      /* Le niveau peut disparaître avant les icônes : la pastille dit déjà la
+         couleur. */
+      .head .level { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
       .dot {
         width: 12px; height: 12px; border-radius: 50%; flex: 0 0 auto;
         box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
       }
       .label { font-weight: 500; color: var(--primary-text-color); }
       .level { margin-left: auto; font-size: 0.9em; color: var(--secondary-text-color); }
-      .icon-row { display: flex; align-items: center; gap: 4px; }
+      .icon-row {
+        display: flex; align-items: center; gap: 4px;
+        /* Une tempête peut déclencher six phénomènes : la rangée se replie
+           plutôt que de pousser le reste hors du cadre. */
+        flex-wrap: wrap; justify-content: flex-end;
+      }
       .icon-row ha-icon { --mdc-icon-size: 18px; }
       /* isolation enferme le mélange du calque d'encre ci-dessous : sans elle,
          mix-blend-mode irait chercher le fond du tableau de bord. */
@@ -1333,11 +1369,18 @@ class MeteoFranceVigilanceCard extends HTMLElement {
          paraîtrait alors flotter au milieu plutôt que dans le coin. */
       .map-wrap:has(svg.shape) {
         aspect-ratio: auto;
+        /* Une hauteur souhaitée, non imposée : quand la vue est basse, la
+           silhouette cède comme le ferait une vignette, au lieu de chasser
+           les phénomènes qu'elle illustre. */
         height: var(--mfv-shape-height, 190px);
+        min-height: 90px;
+        max-height: var(--mfv-shape-height, 190px);
+        flex: 1 1 auto;
         width: 100%;
-        max-width: none;
+        /* L'option de largeur vaut aussi ici : elle était annulée, et le
+           curseur de l'éditeur ne faisait rien sur un territoire. */
+        max-width: var(--mfv-map-width, none);
         margin-inline: 0;
-        flex: 0 0 auto;
       }
       svg.shape {
         width: 100%; height: 100%; display: block;
@@ -1444,16 +1487,23 @@ class MeteoFranceVigilanceCard extends HTMLElement {
          « Saint-Martin et Saint-Barthélemy » tient mal à côté d'une consigne
          et de trois icônes. Le nom cède donc la place le premier, en
          s'abrégeant, plutôt que de rejeter les icônes à la ligne suivante. */
-      .compact .head { flex-wrap: nowrap; }
+      /* La ligne compacte se replie elle aussi quand la place manque : mieux
+         vaut deux lignes qu'un nom réduit à trois lettres. */
+      .compact .head { flex-wrap: wrap; row-gap: 4px; }
       .compact .label {
+        flex: 1 1 6em;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      /* La consigne et le niveau ne se compriment jamais : ce sont eux qui
-         portent l'information. */
-      .compact .notice, .compact .level, .compact .icon-row { flex: 0 0 auto; }
+      /* La consigne ne se comprime pas : elle porte une consigne de sécurité.
+         Le niveau et les icônes, eux, cèdent — la pastille et les puces disent
+         déjà l'essentiel. Une seule marge automatique dans la ligne, sinon les
+         deux se partagent l'espace et écartent le badge de son nom. */
+      .compact .notice { flex: 0 0 auto; margin-right: 0; }
+      .compact .level { flex: 0 1 auto; }
+      .compact .icon-row { flex: 0 1 auto; min-width: 0; overflow: hidden; }
 
       .stale {
         position: absolute; top: 8px; left: 8px;
@@ -1462,7 +1512,11 @@ class MeteoFranceVigilanceCard extends HTMLElement {
         background: var(--error-color, #e01f1f);
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
       }
-      .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+      /* « Vagues-submersion » est plus large qu'une colonne étroite : la puce
+         se resserre sur son texte plutôt que de dépasser du bloc. */
+      .chip { min-width: 0; max-width: 100%; }
+      .chip span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
       .chip {
         display: inline-flex; align-items: center; gap: 4px;
         padding: 3px 10px 3px 6px;
@@ -1476,6 +1530,16 @@ class MeteoFranceVigilanceCard extends HTMLElement {
         border: 1px solid color-mix(in srgb, var(--chip-color) 55%, transparent);
       }
       .chip ha-icon { --mdc-icon-size: 16px; color: var(--chip-color); }
+
+      /* Au doigt, une icône de dix-huit pixels se rate. On agrandit la zone
+         sensible sans toucher au dessin : la marge négative reprend ce que le
+         remplissage ajoute. */
+      @media (pointer: coarse) {
+        .icon-row { gap: 10px; }
+        .icon-row ha-icon { padding: 8px; margin: -8px; }
+        .chip { padding-block: 8px; margin-block: -5px; }
+        .tl-row { padding: 9px 0; margin-block: -5px; }
+      }
       .empty, .comment, .foot, .tl-quiet {
         font-size: 0.8em; color: var(--secondary-text-color);
       }
@@ -1485,8 +1549,10 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       .grid {
         display: grid; gap: 12px;
         /* Deux colonnes quand la place le permet, une seule sinon : la carte
-           est souvent posée dans une colonne étroite de tableau de bord. */
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+           est souvent posée dans une colonne étroite de tableau de bord.
+           Le seuil tient compte de ce qu'une colonne doit contenir — une
+           vignette, un en-tête et des puces —, non de la seule vignette. */
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       }
 
       /* ── Disposition : focus ────────────────────────────────────────── */
@@ -1517,7 +1583,16 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       .tl-row { display: grid; grid-template-columns: 20px 1fr; gap: 8px; align-items: center; padding: 4px 0; }
       .tl-row ha-icon { --mdc-icon-size: 18px; }
       .tl-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-      .tl-name { display: flex; justify-content: space-between; gap: 8px; font-size: 0.82em; }
+      .tl-name {
+        display: flex; justify-content: space-between; gap: 8px;
+        font-size: 0.82em; min-width: 0;
+      }
+      /* L'heure de l'alerte est ce qu'on vient chercher : c'est le nom du
+         phénomène qui s'abrège, jamais elle. */
+      .tl-name > span:first-child {
+        min-width: 0; overflow: hidden; text-overflow: ellipsis;
+        white-space: nowrap;
+      }
       .tl-name span:last-child {
         color: var(--secondary-text-color);
         font-variant-numeric: tabular-nums;

@@ -32,6 +32,15 @@ Chaque page existe en `mode=light` et `mode=dark`. Les fichiers vont dans
 Les tailles de fenêtre sont à vérifier après chaque changement de page : une
 fenêtre trop courte coupe la dernière carte sans que rien ne le signale.
 
+`?width=auto` laisse la scène et les cartes prendre la largeur de la fenêtre,
+au lieu des largeurs fixes que veulent les captures. C'est le seul moyen
+d'éprouver le comportement de la carte dans une colonne étroite — un panneau
+latéral, un téléphone en portrait :
+
+```bash
+chrome --headless=new --window-size=250,600   --screenshot=etroit.png   "file:///…/screenshot-harness.html?page=outre-mer-compact&mode=light&width=auto"
+```
+
 Chrome veut des chemins **absolus** : une sortie relative échoue sans que la
 commande le dise clairement, et l'adresse du harnais doit être une URL
 `file:///` complète, faute de quoi elle est prise pour un nom de domaine.
