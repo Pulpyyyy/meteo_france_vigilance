@@ -48,7 +48,12 @@ const THEMES = ["officiel", "bandeau", "plein", "sobre"];
 
 // À partir de l'orange, la vigilance demande une action. C'est le seuil du
 // thème « plein » et de l'option `alert_only`.
-const ALERT_LEVEL = 3;
+//
+// Le seuil porte sur la COULEUR, jamais sur son identifiant : outre-mer, les
+// échelles diffèrent d'un bassin à l'autre — « 3 » y est un orange cyclonique
+// et « 7 » un jaune. Le composant normalise tout vers ces quatre couleurs.
+const ALERT_COLORS = ["orange", "red"];
+const alerted = (state) => ALERT_COLORS.includes(state);
 
 // Les couleurs officielles de la vigilance. Elles ne suivent pas le thème :
 // une vigilance orange est orange, c'est la convention que tout le monde lit.
@@ -111,6 +116,33 @@ const ACTIONS = ["more-info", "toggle", "navigate", "url", "perform-action", "no
  * vignette. Réglable sans toucher au code par les variables CSS que la règle
  * plus bas nomme en premier. */
 const INSET_BOX = { left: "15%", top: "4%", width: "36%", height: "4.4%" };
+
+/* Les contours des territoires d'outre-mer, tracés depuis les données
+ * publiques (IGN pour les départements, OpenStreetMap pour les îles du Nord)
+ * et simplifiés pour rester lisibles à la taille d'une icône.
+ *
+ * Ils sont ici parce que Météo France ne publie de vignette que pour trois
+ * bassins sur six : la dessiner nous-mêmes est le seul moyen de traiter les
+ * six pareil — et de rendre le violet et le gris, que ses vignettes ne
+ * peignent jamais.
+ *
+ * Saint-Martin et Saint-Barthélemy partagent un domaine mais sont distantes
+ * de 82 km : chacune est cadrée dans son coin, comme la vignette nationale
+ * place la Corse. */
+const OM_SHAPES = {
+  "VIGI971":
+    "M4.4 39.2L4 38.6L4.8 37.9L4.8 35.4L5.6 34.8L4.9 33.9L6.3 33.1L6.4 31.5L7.5 30.7L7.6 29.9L10.5 29.4L11.2 28.5L13.3 29.4L14.4 31.3L16.6 31.6L17.5 32.8L18.3 32.4L19.1 33.5L21.4 33.2L22.4 33.7L22.1 34.6L24 35.4L26.6 35.2L25.3 37.5L24.6 37.5L25 37L24.6 36.4L24.8 37L23.9 37.8L24.2 38.4L25.5 37.9L25.4 39.2L26.2 39L27 37.6L27.1 39.4L28.6 39L29.4 37.3L30.1 37.7L30.7 37.1L31.7 37.3L31.9 38L31.1 38.1L31.6 38.6L32.3 38.1L32.6 40.5L32 41.3L32.3 43.2L33.2 43.3L32.6 43.7L32.9 44L32.1 44.2L31.3 42.9L30.7 43.3L29 42.7L28.1 44.6L28.7 46.4L27.9 47.7L28.4 49.1L29 49.3L28.5 50.6L28.8 51.9L29.7 52.5L29.3 53.4L31.1 54.7L30.1 56.7L31.1 58.1L31.1 62.4L31.7 63.6L29.8 67.1L25.5 70.6L24.7 72.8L23.1 73.4L21.6 73L20.4 74.1L20 73.7L19.3 73.9L18.1 75.2L15.1 75.4L14.3 71.6L11 68.5L10.4 65.7L8.4 62.9L8.7 59.5L8 59.3L7.8 57.9L8.3 54.8L7.2 53.7L7.8 52.7L7.7 50.2L6.8 49.6L7 48.3L6.4 47.5L7 45.3L6.5 43.8L4.9 42L4.4 39.2ZM34.4 44.9L34.2 44.5L35 45L35.2 44.5L34.6 44.7L34.1 43L32.3 41L32.6 37.8L31.8 36.9L32.8 36.4L33.3 36.7L32.6 35.4L33.7 34.8L33.9 32L34.5 31.1L35.3 30.4L36.9 30.8L37.1 29.9L38.4 29.4L37.8 29.3L38.2 28.6L37.6 28.3L38.3 26.9L37.1 25.5L36.7 25.9L34.9 24.8L33.7 20.2L33.2 19.9L33.9 18L36.9 15.8L37.3 14.7L39.2 13.8L40.6 11.6L41.6 11.2L41.4 12.1L41.9 12.3L41.9 12.9L43.9 12.8L44.1 14.2L45 14.3L47.5 16.6L48.9 21.5L48.5 23.3L48 23.4L48 26L50.9 30.6L52.2 31.2L52.1 31.5L54.6 31.5L55 32.2L55.8 31.7L58.1 31.9L59 32.7L59.9 32.4L59.9 33L61.1 33.1L63.9 35.1L65.7 38.6L69.7 40.6L70.5 40.3L71.9 40.8L73.3 41.8L64.4 40.6L60.1 42L55.3 42.1L51.9 43.3L50.9 44.4L49.7 44.2L49.3 45L48.3 44.9L46 46L44.5 45.9L43.8 46.6L41.6 47.3L39.3 46.3L36.9 46.2L36.6 45.1L35.3 45.5L34.4 44.9ZM57 75.3L57.5 72.3L58.8 72L58.8 71.2L60.5 69.2L62.2 68.8L64.7 70.5L65.9 70.6L65.7 71L66.8 71.2L67.8 73.7L70.4 75.8L71 77.5L70.7 79.1L69.9 80.8L68.5 81.5L66.7 83.3L61.8 84.8L57.9 83.2L56.2 81.2L55.5 76.2L57 75.3ZM91.2 29.9L92 31.5L91.7 32L89.5 32.8L86.9 34.7L84.2 35.2L81.6 36.6L81.5 35.2L82.3 34.2L83.7 34.2L84 33.4L85.2 33.3L91.2 29.9Z",
+  "VIGI972":
+    "M30.7 49.7L27.5 48.7L27.1 47.2L24.9 45.9L24.5 44.6L23.8 44.4L23.5 43L19.7 37.5L18.9 34.9L20.2 28.1L18.8 26.1L16.5 24.4L15.3 22L13.7 21.6L11.5 17.9L11.1 14.3L11.6 12.6L15.1 7.1L18.4 5.9L19.7 4.7L27 4.2L34.2 6.8L35.6 8.6L37.1 8.9L38.9 10.4L40.1 10.4L41.3 12.1L42.7 12.3L43.9 11.6L44.7 12.8L46.3 12.8L45.8 14.1L47.4 14.3L48.1 16.6L49.4 17L50.2 16.2L50.2 16.8L51.2 16.9L50.7 18.7L51.7 19.4L51.9 20.6L53 20.9L53.6 22.3L55 22.4L54.4 23L57.1 25.5L57.1 26.9L58.1 27.8L58 29.4L58.8 29.8L59.4 29.6L59.8 27.7L60.6 26.7L62.9 25.3L64.5 25L65.4 25.9L66.9 25.1L67.4 24L67.6 24.6L69.4 23.7L71 21.9L71.6 22.6L73.5 22.9L73.1 23.1L73.8 23.4L73.7 24.1L73.2 24.6L73.8 25.9L72.7 26L71.9 24.2L70.5 24.4L70.2 25.3L69.6 25.4L69.5 25.9L71 26.8L70.6 27.8L69.9 27.5L69.1 28.5L70.6 29.2L70.4 30L69.6 29.8L69.8 30.4L68.5 29.7L67.2 30L66.9 28.5L64.4 27.3L62.6 27.3L61.8 28.7L61.4 28.6L61.2 29.7L62.4 30.3L61.2 30.4L61.1 32.3L62.9 33.7L63.5 32.6L64.5 32.6L63 34.3L63.2 35.1L64.7 35L65.8 33.6L66.5 33.5L66.5 36L67.5 36.6L68.6 36.1L68.9 36.7L68.6 37.3L67.8 37.2L67 38.7L66.7 38L64 38.8L63.9 39.6L64.6 40.4L62.6 39.5L61.4 42.1L62.8 42.9L63.9 45L65.5 44.8L66 43.2L66.9 42.7L67.4 43.4L67.9 43.3L67.9 42.6L68.6 43.4L69.5 42.8L69.1 43.5L70.1 44L70.6 43.8L70.7 42.7L72 42.8L71.5 45.1L71 44.4L70.7 45.5L69.6 45.8L68.5 45.1L68.7 45.6L67.9 45.9L69.7 47.2L71 47.2L69.9 47.6L70 48.2L70.6 48.1L70.6 49L69.3 49.5L69.2 50.8L70.9 51.2L71.2 50.8L71.3 51.9L73 50.8L74.2 51.1L74.4 51.5L73.2 51.8L72.9 52.4L74.6 54.4L73.9 54.7L73.8 55.3L74.7 56.4L76.3 56.6L77.5 55.6L78.1 56.9L77.7 57.3L78.4 57.8L77.5 57.8L77.4 58.3L79.1 58.5L77.2 59.1L77.5 60.4L79 59.9L78 60.7L78.1 61.1L79.4 60.7L78.6 62L79.3 62L81.3 60.2L82.1 60.4L79.8 63.8L81.9 66L81.6 66.6L80 66.8L80.8 67.1L81.9 66.7L82.3 67.5L82 68.9L81.3 68.4L80.5 68.7L80.7 69.6L80.1 70.7L80.5 71L81.6 70.1L82.4 70.5L82.5 73.6L82.9 74.1L83.5 73.7L84.7 76.5L84.1 77.7L83.3 78L83 77.1L82.4 78L83.3 78.5L84.1 80L84.9 80.1L83.8 80.1L82.4 81.5L82.1 84.2L80.6 85L80.5 86.9L79.5 87L79.1 86.1L78 86.1L77.9 87.1L79 87.3L78.6 88.1L79.9 88.4L79.8 89.1L78.5 88.6L77 90.2L76.8 91.5L74.5 92L72.9 91.5L73.1 90.8L71.7 90.2L71.2 89.2L71.6 88.5L70.2 87.5L72.5 84L71.8 81.6L72.9 82.6L73.9 82.2L73.8 80.7L75.3 81L74.7 80.4L75.6 79.6L75 78.2L73.9 78.5L73.1 77.9L72.9 78.7L72 79L69.2 82.3L69 81.6L67 80L67.2 78.5L66.2 78.6L65.9 78L65.7 78.8L63 79.7L61.4 79L59.1 79.1L57.6 77.8L55.9 78.6L55.2 78.1L55.7 77.3L54.9 76.1L54.1 76.6L54.1 77.8L52.9 76.7L52.9 79L51.5 78.4L50.7 76.7L50 77.6L50.3 78.1L48.1 76.4L45.7 77L43.7 78.1L42.9 80.4L41.5 81.2L39.9 80.5L39 78.6L37.4 78.5L36.8 77.6L37.5 76.5L37.4 74.8L35.4 74.2L35.6 73.3L36.6 73L36.4 71.9L33.6 71.4L34.4 70.3L34.8 68.4L36 67.9L36 66.6L37.9 65.2L39.5 65.6L40.1 65.2L40.6 63.6L42 63.3L42.2 61.5L42.4 62.4L42.8 62L42.3 63.5L44.6 62.5L44.9 63.7L43.6 64.4L44.3 65.3L46.1 65.4L45.8 66.2L46.6 66.5L47.4 65.6L48.3 65.8L48.5 66.6L49 66.5L49.9 65.2L50.4 65.5L50.1 66.3L51.3 64.8L52.5 64.4L51.9 63.5L52.6 63.4L53.1 64.2L53.2 63.7L52.2 62.9L51.8 61.7L49.4 61.7L49.5 60.6L48.9 60L49.7 58.6L47.1 57.4L47.3 56.1L48.5 55.4L48 54.5L49 54.4L47.6 54.1L48.1 52.5L47.2 52.3L45.9 53.6L44.4 53.5L44.9 56L44.2 55.4L43.2 55.7L42.8 54.9L40.8 55.6L41 53.9L40.6 54.6L39.8 54.2L39.8 55.2L39 54.1L35.5 54.9L33 51.2L30.7 49.7Z",
+  "VIGI973":
+    "M39.3 8.4L43.9 8.9L44.6 9.5L43.5 8.8L44 8.4L50.8 11.6L50.7 10.9L52.1 11.2L66 24L67.5 23.3L70.3 26.4L74.7 29.3L78.8 30.4L79.9 32L80.8 36.2L82.3 36.7L81.6 37.7L81.8 38.7L83 40.8L84 41.4L83.3 44.4L82.7 45.4L80.2 46.9L79.7 49L76.7 51.6L76.7 53L75.5 53.4L75.1 55.3L70.2 63.3L69.2 64.7L68.6 64.4L67.8 65L67.5 66.3L66.9 66.3L66.3 67.4L67 68.6L65.3 71.8L65.7 72.6L64.6 73.1L62 78.9L61.4 79.2L62.1 80.6L61.3 81.4L61.5 82.1L59.9 83.2L60.1 83.7L59.2 84.2L58.9 85.6L54.1 87.9L53 90.2L51 90.6L48.7 89.3L47.5 89.2L44 90.1L43.9 89.4L45.2 88.3L43.4 87.3L43 86.3L42.1 86.3L41.7 87.1L39.5 88.6L37.5 88.6L34.8 87.9L34.6 87.4L32.8 87.3L33.2 86.2L32.2 85.6L30.5 86.7L31 87.2L29.3 87.2L28.8 88.4L28.1 87.9L27.8 89.5L25.9 90.3L24.9 89.9L24.1 92L22.4 91.6L22 90.4L21.1 91.1L18.2 91L17.8 89.6L16.5 90L16.2 89.5L15 89.5L14.5 88.7L13.3 88.2L14.1 87.9L13.5 86.8L12 86.5L12.7 86.1L14.3 86.5L15 84.2L16.4 84.1L17.2 83.3L20.1 77.2L21.5 75.9L21.5 74.6L22.2 73.9L21.9 72.3L22.6 71.2L21.8 68.9L22.3 68.7L22.3 67.8L21.3 66.9L23.2 64L25 62.9L25.1 61.2L26.2 60.1L26.3 57.5L27 55.8L26.3 54.8L25.4 55.2L24.5 54.2L24.6 53.2L23.6 51.3L21.7 51L21.9 50L20.8 49.7L20.5 48.5L19.5 47.8L18.8 45.9L17.9 45.1L18.7 42.8L17.1 41.8L17.1 37.7L15.8 37.3L16.1 35.1L15.6 33.6L16.5 31.6L15.9 30.7L16.2 29L15.2 28.4L14.9 24.4L15.8 23.5L16.5 20L17.4 19.5L19.8 15.7L22.1 14.2L26 9.5L26.1 6.3L27.3 4L31.4 4.6L36.3 7.3L39.3 8.4Z",
+  "VIGI974":
+    "M9.3 44.8L6 42L4.6 39.9L4.7 37L5.3 36.3L4 33.9L6.7 30.9L8.3 31.2L9.7 30.6L12.5 28.3L13.4 24.8L12.6 21.3L13.2 18.6L13.4 19.8L14.3 18.3L13.8 17.6L13.9 18.4L13.5 18.3L13.5 17L14 16.5L16.5 17.4L18.4 17.2L18.6 17.7L17.9 18L19.4 18.3L18.9 16.9L20.2 17.2L22.2 16.3L23.2 14.7L29.3 10.2L33 9L35.8 9.4L37.3 8.6L39.9 10.5L42.7 10.8L44.6 10.2L50.1 12.1L51.4 12.2L52.6 11.6L55.8 12.5L57.3 12.3L61.3 14.6L65.2 15.3L67.8 16.9L70.2 19.7L72.2 22.9L73 30.9L73.7 32.4L75.2 33.1L77.2 35.7L77.1 37.3L78.1 39L82.7 44.4L84 46.7L86.8 47.5L88.2 49L90.5 50L91.8 52.5L91.5 54.2L92 56L90.5 56.5L90.3 59.1L88.8 60.7L88 62.8L87 67.7L88 71.9L87.3 75.3L88.1 78.5L87.8 79.4L86.4 81.5L83.3 83.8L80.6 83.4L79.8 84.1L76.4 84.4L73.9 85.4L70 85.2L68.5 86.5L66.8 86.4L65.1 87.4L63.2 86.3L59.7 87L56.5 84.7L54.4 85.3L52.1 84.6L51.5 85.1L49.7 83.5L47.6 83.1L44.4 81.5L42 81.8L41.2 80.4L38.5 80L37.8 78.6L37 78.1L34.3 77.8L32.8 77.1L28.7 72.6L20.9 70.4L20.2 67.5L18.7 66.6L18.8 66L17.4 64.7L14.8 63.1L13.1 58.9L14 56L14 52.6L13.2 51.5L12 51L11.7 48.2L9.2 45.5L9.3 44.8Z",
+  "VIGI976":
+    "M30.8 42.1L31.1 40.8L32.8 40.3L33.5 40.8L33.9 40.1L33 39.3L32.1 39.8L30.3 39.7L30 39L30.4 37.7L29.9 38.3L29.3 37.7L31.3 36.6L31.4 33.2L29.5 33.1L29.6 34.1L29 34.4L27.7 32.7L26.1 32.5L25.7 33.3L25.2 33.2L24.4 32.8L24.2 31.9L22.2 30.8L21 29.2L19.7 29.5L19 30.6L18.4 29.4L16.9 28.6L16.7 27.5L19.5 25.3L20.5 23.2L19.8 22.3L16 22L16.9 21.7L18.6 19.5L18.9 18.3L18.3 17.5L18.9 16.4L21.6 16.9L23.3 15.5L22.8 14.9L23.5 15.2L24.1 14.4L24.2 12.8L22.6 11.6L25 12.3L26.2 11.7L26.8 11.1L26.5 9.1L27.3 8.8L27.4 7.9L29.2 7.1L29 5.6L30.4 5.8L32.1 4L32.6 4.5L31.7 5L31.4 6.1L32.2 6.9L29.6 7.6L27.9 8.9L32 10.5L31.1 11.4L31.3 12L32.8 12.1L33 12.8L33.8 13L34.2 13.4L33.6 13.6L33.6 14.2L34.4 15.3L37.3 16.7L38.3 16.5L38.3 17.4L37.2 17L36.4 17.8L36.8 19.3L38 20.2L38 21.4L38.6 21.7L37.5 22.3L36.1 22.2L37.6 22.4L37.1 23.3L38.1 23.3L38.4 24.2L40.1 24.2L40.7 25.1L40.2 24.4L41.2 24.9L41.7 24.2L40.9 23.4L42.6 23.5L43.3 23.8L43.3 25.1L44.3 25.6L46 24.6L45.9 23.4L46.9 22.9L46.4 22.2L47.2 22.5L47.3 21.9L46.5 21.4L47.1 20.8L48 22.9L49.7 24L50.3 24.1L51.3 23.2L52 23.8L52.9 23.5L54.5 24.3L56.4 24L57.1 24.5L57 25.1L57.9 25.4L58.9 24.6L58.3 26L58.7 26.7L60.6 27.6L61.6 27.3L62.4 29L64.5 29.9L64 30.7L65.2 32.2L64.2 32.7L63.9 34.9L62.7 34.8L63.7 33.4L62.8 32.1L62.9 33.1L63.3 33.2L62.6 33.8L62.2 33.5L62.6 33.9L62.1 34.1L62.1 35.1L61.7 35.2L63.7 35.6L63.5 36.5L64.8 37L64.7 37.8L64.3 38.1L63.9 37.4L62.8 37.6L62.9 38.2L62.1 38.1L61 39.4L60.5 39L61 39.4L59.4 40.3L59.1 42L56.2 44L56.7 44.7L56.3 46.5L54.1 47.7L53.5 49.5L54.8 49.3L54.5 49.9L52.8 51.3L51.8 51.3L52 52L51.5 52.2L54.3 52.9L54.1 53.8L54.6 55.2L55 55.6L55.5 55.2L55.9 55.9L55.8 57.4L58.4 57.5L57.9 58.9L58.7 60L60.8 59.7L59.3 62.1L59.6 63.3L58.1 64.6L54.4 66.1L54.8 66.6L54.3 68.4L54.3 67.7L53.5 68.2L54.4 68.7L54.1 69.4L54.5 69.4L54.7 70.4L56.6 71.9L52.1 71.1L51.4 72.2L51.7 72.9L50.4 73.3L49.5 75L50.4 76.7L50.3 77.7L49 77.2L47.9 77.6L47.7 79.3L49.3 81L49.7 83.3L53.1 84.7L53.7 85.9L56.5 85.6L55.6 87.2L54.1 87.9L53.9 88.8L51.9 87.9L50.6 88L49.9 89.6L50 90.7L49.4 90.6L48.5 86.5L47.2 85.7L45.9 85.9L46.3 85.7L45.7 85.1L45.1 86.2L45.4 86.3L44.6 87L45 89.1L42.9 91.9L41.1 91.9L40.5 89.8L39.2 89.2L38.6 90.3L37.3 90.9L37 86.9L36.8 87.5L35.6 87L34.3 87.4L33 90.4L32.2 88.8L32.9 87.4L32.4 85.5L33.5 83.9L33.5 82.1L32.9 81.2L31.8 81.4L30.8 83L29 83.5L26.7 82.2L25.6 82.5L29.6 80.2L31.1 78.3L31.2 76.2L31.9 75.1L30.3 73.1L27.7 74.3L28.1 73.1L27.6 72.3L26.7 72.3L25.3 68.1L23.8 67.3L23.7 66.6L30.6 66.4L31.5 67.9L31.4 71.3L32.2 72.6L36.7 74.1L37 75.2L39.8 75.9L39.9 76.4L40.2 75.8L42 75.8L42.9 75.2L44.3 72.7L44 71.1L42.8 69.7L42.9 68.8L41.7 68L42 66.9L40.9 65.5L40.9 66.3L40.3 64.5L38.7 64L38.2 62.9L38.6 62.8L36.7 62.2L33.6 57.6L31.9 57.5L29.1 55L29.3 54.3L30.5 54.1L31.5 52.6L34.6 52.8L36.1 51.6L31.1 50.2L31.6 46.8L32.4 46.5L32.3 45L30.7 43.5L30.8 42.1ZM72.9 39.9L70.8 38.3L70.2 38.5L70.2 38L68.6 37.3L68.8 36.8L69.3 36.7L69.8 37.6L72.1 38.9L72.2 38.2L73 38L72.9 37.4L74.3 34.9L73.9 34.4L76.2 31.2L78.3 33.8L78.5 35.5L79.5 36.4L78.9 37.1L79.9 37.3L79.8 37.9L79.3 37.4L78.5 38.5L79 39.3L78.7 39.8L79.2 40.2L78.2 41.4L76.8 41.5L76.3 42.3L76.1 44.3L77 45.9L76.6 46.1L76 45L74.9 44.5L74.7 42.8L72.9 39.9Z",
+  "VIGI978-977":
+    "M18.2 39.7L18.3 40.4L19.7 41.1L20 42.1L20.5 41.7L22.1 41.5L23.5 41.9L23.7 43.6L25.1 42.6L26.3 44L27 44.1L28.2 43.2L29.6 43.5L30 44L29.7 44.5L30 45.5L30.4 44.4L30 43L31.1 41.8L32.7 41.6L34.4 42L35.5 42.8L35.2 43.3L34.6 43.2L35.2 43.4L35.1 43.9L34.4 43.6L34.8 43.9L34.8 44.8L34.3 45L35.1 45.7L34.7 47.8L35.2 48L36.4 47.8L37.5 46.4L37.5 45.6L38.7 45.5L39 44.8L39.6 44.5L39.8 43.6L40.9 43.3L40.1 41.8L42.2 40.3L42 39.7L42.7 39.3L42.5 39L41.7 38.9L41.6 37.7L42.4 36.4L43.3 36.1L43.4 35.3L44.1 34.7L43.6 32.9L44.7 31.7L43.6 32L42.8 31L43.4 30.6L44.1 30.7L44.4 31.2L45.1 31.1L45 31.7L45.4 31.8L45.8 31.2L44.7 29L45.3 28.3L45.3 27.6L44.5 27.2L44 27.4L42.7 25.3L43.7 23.6L44.3 23.6L44.5 24.1L45.8 21.9L45 22.1L43.1 20.8L42 19.4L41.5 18.1L42 15.6L41.1 14.8L41.1 14.2L41.9 13.3L43 13.8L43.6 13.1L43.5 12.5L42.8 12.3L42.5 11.6L42.4 9.5L42.9 8.7L42.2 8.8L40.8 8L39.4 8.2L39 8.6L38.5 8.3L36.8 8.3L36.2 9.9L37.5 11.8L37.5 12.3L36.9 12.4L37.1 11.5L36.7 10.8L36.5 11.2L35.7 11.5L35 10.6L34.5 10.8L32.6 9.9L31.9 13.4L32.1 13.9L30.7 15.7L29.9 16.2L28.2 16.3L27.7 16.2L26.9 15.1L26.2 15.6L26.2 16.2L25.1 16.4L25.6 17.1L25.4 18L24.9 18.5L24.1 18.5L23.1 20.1L21.8 20.8L22.1 21.5L21.6 21.8L22.1 21.7L23.3 23.3L22.2 25.2L20.5 26L20.4 26.5L20.7 25.8L21.4 25.9L21.3 26.7L20.5 26.6L21.1 26.8L21.5 26.4L21.5 27L20.5 28L18.4 28.8L19.4 29.5L19.5 29L19.7 29.5L20.4 28.6L21.5 28L20.2 32.7L19.5 32.6L18.9 32L18.6 32.8L18.9 33.3L20.2 33.4L20.9 34.1L20.3 35.3L20.7 36.4L21.9 37.6L22.2 39.7L21.5 39.4L20.9 38.4L20.3 38.6L19.2 37.7L18.6 38.2L19.2 38.3L19.3 39.1L18.2 39.7ZM52 60.4L52.2 60.9L52.6 60.7L53.8 61.3L54.1 63L55.6 63.7L55.8 64.4L56.2 64.4L58.3 66.9L60.2 66.7L60.6 67L60.7 67.9L62 68.6L62.3 69.3L62 69.7L61.7 69.5L61.8 69.8L64 72.9L63.3 73.3L62.7 71.7L62 71.4L61.4 72L61.8 73L63.2 74.4L64.5 74.7L64.5 75.8L65.5 77.1L66.7 77.8L67.3 79.3L68 79.7L67.9 80.6L69 81.5L69.7 81.5L70.5 79.1L70.8 79.2L71.1 78.5L72.1 78.2L72.8 78.7L73 79.6L73.8 80.6L74.3 78.9L75.5 79.4L75.7 77.6L77.6 76.7L78.4 76.9L78.7 77.9L79.6 77.7L79.6 78.7L80.6 79.8L82.2 78.7L82.1 76.6L82.5 76.3L82.4 75.4L83 74.9L86.4 73.5L87.1 72.6L88.6 72.1L89.2 72.2L89.7 73.4L90.2 73.7L90.8 72.9L90.5 70.2L91.3 69.7L91.8 68.6L91.5 67.6L92 66.7L91.8 65.6L91.5 65.4L90.4 66.9L89.6 67.1L89.6 68L89.2 68.1L88.2 67.5L88.7 66.1L87.9 64.6L87.1 65.1L87.2 66L86.4 66.7L85.1 65.6L85.4 64.4L85.9 64.3L85.6 63.9L83.9 64.7L83.6 65.7L82.7 65.7L82.2 65L83.6 63.5L82.9 63L82.9 62L82.7 62.8L80.9 63.2L80.3 62.5L80.3 61.5L79.9 61.1L78.7 62.2L78.7 64L76.9 66.8L75.6 67.4L74.3 67.4L73.8 66.8L74.1 66.1L73.3 66.1L71 67.9L71.5 68.7L71.3 69.1L70.2 69.5L70 69.1L69.4 69.3L67.9 68.4L67.5 67.4L68.2 66.6L68 65.7L66.5 65.6L65.7 64L66.4 63.4L66.1 62.5L65.7 62.3L64.6 62.6L64.1 62.3L63.3 59.9L61.4 60.3L61.3 61L60 61.4L58.9 61.2L57.9 59.9L57.8 60.7L57 61L56.2 60L56.1 59L55.1 58.5L55.6 57.6L55 56.8L55.2 56.6L54.8 56.5L53.4 56.8L52.8 57.4L54.3 57.8L54.8 58.4L54.4 60L52 60.4Z",
+};
 
 const WORDS = {
   fr: {
@@ -439,13 +471,10 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     return id ? this._hass.states[id] : null;
   }
 
-  /** La couleur la plus grave parmi les périodes affichées. */
+  /** Vrai si l'une des périodes affichées atteint le seuil d'alerte. */
   _worst(resolved) {
-    return Math.max(
-      0,
-      ...this._periods().map(
-        (period) => this._state(resolved, period)?.attributes.color_id || 0
-      )
+    return this._periods().some((period) =>
+      alerted(this._state(resolved, period)?.state)
     );
   }
 
@@ -482,7 +511,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     // rien n'atteint l'orange. Jamais dans l'éditeur, où l'on doit pouvoir la
     // configurer même par temps calme.
     const hidden =
-      this._config.alert_only && !this.preview && this._worst(resolved) < ALERT_LEVEL;
+      this._config.alert_only && !this.preview && !this._worst(resolved);
     this.style.display = hidden ? "none" : "";
     if (hidden) return;
 
@@ -707,7 +736,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     // de la vignette : c'est tout l'objet de ce thème.
     const mapShown = parts.mapWrap.style.display !== "none";
     const banded =
-      this._config.theme === "plein" && (attrs.color_id || 0) >= ALERT_LEVEL;
+      this._config.theme === "plein" && alerted(this._state(resolved, main)?.state);
     const overlaid = mapShown && !banded;
     parts.node.querySelector(".head.bare").style.display = overlaid ? "none" : "";
     parts.node.querySelector(".overlay").style.display = overlaid ? "" : "none";
@@ -760,10 +789,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       "--level-color",
       level ? level.color : "var(--disabled-text-color)"
     );
-    parts.node.classList.toggle(
-      "alerted",
-      (attrs.color_id || 0) >= ALERT_LEVEL
-    );
+    parts.node.classList.toggle("alerted", alerted(state?.state));
 
     // Toutes les pastilles du bloc : le focus en a deux — celle du bandeau et
     // celle posée sur la vignette — et une seule colorée serait un défaut vu.
@@ -926,6 +952,14 @@ class MeteoFranceVigilanceCard extends HTMLElement {
   }
 
   _setMap(parts, resolved, period, attrs) {
+    // Un territoire d'outre-mer n'a pas de vignette nationale : la carte
+    // dessine sa silhouette, peinte de la couleur du bulletin.
+    const shape = OM_SHAPES[attrs.domain];
+    if (shape) {
+      this._setShape(parts, attrs, shape, resolved.sensors[period]);
+      return;
+    }
+
     const mapId = resolved.maps[period];
     const map = mapId ? this._hass.states[mapId] : null;
     const picture = map?.attributes.entity_picture;
@@ -946,6 +980,45 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     // La vignette porte les mêmes actions que le bloc, mais sur l'image :
     // « more-info » sans entité y ouvre la vignette, pas le capteur.
     this._bindActions(parts.map, mapId);
+  }
+
+  /**
+   * La silhouette d'un territoire, peinte de sa couleur de vigilance.
+   *
+   * `color_hex` vient du composant : il porte la teinte du niveau réel —
+   * le violet d'un confinement, le gris d'une phase de sauvegarde — là où la
+   * couleur normalisée dirait seulement « rouge ».
+   */
+  _setShape(parts, attrs, shape, sensorId) {
+    if (!this._config.show_map) {
+      parts.mapWrap.style.display = "none";
+      return;
+    }
+    parts.mapWrap.style.display = "";
+
+    const colour = attrs.color_hex || "var(--disabled-text-color)";
+    const signature = `${shape.length}|${colour}`;
+    if (parts.shapeSignature !== signature) {
+      parts.shapeSignature = signature;
+      parts.map.style.display = "none";
+      let svg = parts.node.querySelector("svg.shape");
+      if (!svg) {
+        svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("class", "shape");
+        svg.setAttribute("viewBox", "0 0 96 96");
+        const path = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        svg.appendChild(path);
+        parts.mapWrap.insertBefore(svg, parts.mapWrap.firstChild);
+      }
+      const path = svg.querySelector("path");
+      path.setAttribute("d", shape);
+      path.setAttribute("fill", colour);
+    }
+
+    this._bindActions(parts.mapWrap, sensorId);
   }
 
   _phenomena(attrs) {
@@ -1135,6 +1208,15 @@ class MeteoFranceVigilanceCard extends HTMLElement {
            le ratio est conservé — la hauteur de la carte en profite. */
         max-width: var(--mfv-map-width, none);
         margin-inline: auto;
+      }
+      /* La silhouette d'un territoire d'outre-mer, dessinée faute de
+         vignette officielle. Même encombrement qu'une image, pour que les
+         deux dispositions se comportent pareil. */
+      svg.shape {
+        width: 100%; display: block;
+        aspect-ratio: 1 / 1;
+        padding: 6px;
+        box-sizing: border-box;
       }
       img.map {
         width: 100%; display: block;

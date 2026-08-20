@@ -200,6 +200,34 @@ Deux exceptions, qui portent leur propre `slug` :
   quelqu'un qui filtre sur `rain` croirait exclure les orages. Le composant
   suit ici la lettre du descriptif technique plutôt que la commodité.
 
+## L'image d'un territoire
+
+Météo France publie une vignette par bassin — la silhouette peinte de la
+couleur en cours — mais **pour trois territoires seulement** : Martinique,
+Guyane et Mayotte répondent, la Guadeloupe, La Réunion et les îles du Nord
+non. Un composant qui propose six territoires ne peut pas en illustrer trois.
+
+La carte dessine donc elle-même les six silhouettes, à partir de contours
+tracés depuis les données publiques — l'IGN pour les départements,
+OpenStreetMap pour Saint-Martin et Saint-Barthélemy — puis simplifiés pour
+rester lisibles à la taille d'une icône. Treize kilo-octets pour l'ensemble,
+embarqués dans la carte.
+
+Trois avantages sur la vignette officielle, au-delà de la couverture :
+
+* le **violet** et le **gris** sont rendus, alors que les vignettes de Météo
+  France s'arrêtent au rouge — elles sont muettes au moment précis où
+  l'information compte le plus ;
+* le tracé se recolorie et se redimensionne sans perte, là où un PNG carré de
+  250 pixels impose une fiche aussi haute que celle de la carte de France ;
+* rien ne dépend d'un service qui répond « absent » une fois sur deux.
+
+Saint-Martin et Saint-Barthélemy partagent un domaine de vigilance mais sont
+distantes de 82 km : chacune est cadrée dans son coin de la vignette, comme la
+carte nationale place la Corse. Les contours d'OpenStreetMap demandent une
+précaution — la recherche par nom renvoie les **eaux territoriales**, pas le
+littoral ; c'est le contour de type « île » qu'il faut retenir.
+
 ## Le format des vignettes
 
 Retour du forum (WarC0zes) : la fiche qui s'ouvre au clic sur une vignette est
