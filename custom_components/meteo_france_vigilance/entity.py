@@ -8,8 +8,6 @@ nommés, au lieu d'une liste de six capteurs à distinguer par leur nom.
 
 from __future__ import annotations
 
-import unicodedata
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -34,16 +32,9 @@ def department_device_info(entry: ConfigEntry, code: str) -> DeviceInfo:
     """L'appareil d'un domaine suivi — département ou bassin d'outre-mer."""
     basin = BASINS.get(code)
     if basin:
-        # Le site de Météo France range les bassins sous un nom sans accent,
-        # pas sous un code : « la-reunion » plutôt que « VIGI974 ».
-        slug = (
-            unicodedata.normalize("NFKD", basin["name"])
-            .encode("ascii", "ignore")
-            .decode()
-            .lower()
-            .replace(" ", "-")
-            .replace("'", "-")
-        )
+        # Le site range les bassins sous un nom, pas sous un code — et n'en
+        # publie pas pour tous : à défaut, l'accueil vaut mieux qu'un lien mort.
+        page = basin.get("page")
         return DeviceInfo(
             identifiers={(DOMAIN, f"{entry.entry_id}_{code}")},
             name=f"Vigilance {basin['name']}",
@@ -51,7 +42,11 @@ def department_device_info(entry: ConfigEntry, code: str) -> DeviceInfo:
             model="Vigilance outre-mer",
             entry_type=DeviceEntryType.SERVICE,
             via_device=(DOMAIN, entry.entry_id),
-            configuration_url=f"https://vigilance.meteofrance.fr/fr/{slug}",
+            configuration_url=(
+                f"https://vigilance.meteofrance.fr/fr/{page}"
+                if page
+                else "https://vigilance.meteofrance.fr/fr"
+            ),
         )
 
     return DeviceInfo(

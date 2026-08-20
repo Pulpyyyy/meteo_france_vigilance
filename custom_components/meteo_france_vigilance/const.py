@@ -133,15 +133,28 @@ SCALE_ANTILLES: Final = "antilles"
 SCALE_INDIAN: Final = "indian_ocean"
 
 # Bassins outre-mer, par identifiant de domaine de l'API.
-BASINS: Final[dict[str, dict[str, str]]] = {
-    "VIGI971": {"name": "Guadeloupe", "scale": SCALE_ANTILLES},
-    "VIGI972": {"name": "Martinique", "scale": SCALE_ANTILLES},
+# `page` est l'adresse du bassin sur vigilance.meteofrance.fr, vérifiée une à
+# une : le site n'en publie pas pour tous les territoires, et un bassin sans
+# page renvoie à l'accueil plutôt que vers un lien mort.
+BASINS: Final[dict[str, dict[str, Any]]] = {
+    "VIGI971": {"name": "Guadeloupe", "scale": SCALE_ANTILLES, "page": "guadeloupe"},
+    "VIGI972": {"name": "Martinique", "scale": SCALE_ANTILLES, "page": "martinique"},
     # La Guyane suit l'échelle antillaise, mais son dictionnaire ne publie pas
     # de phénomène « cyclone » : elle est hors de la zone d'aléa cyclonique.
-    "VIGI973": {"name": "Guyane", "scale": SCALE_ANTILLES, "cyclone": False},
-    "VIGI974": {"name": "La Réunion", "scale": SCALE_INDIAN},
-    "VIGI976": {"name": "Mayotte", "scale": SCALE_INDIAN},
-    "VIGI978-977": {"name": "Saint-Martin et Saint-Barthélemy", "scale": SCALE_ANTILLES},
+    "VIGI973": {
+        "name": "Guyane",
+        "scale": SCALE_ANTILLES,
+        "page": "guyane",
+        "cyclone": False,
+    },
+    "VIGI974": {"name": "La Réunion", "scale": SCALE_INDIAN, "page": "la-reunion"},
+    "VIGI976": {"name": "Mayotte", "scale": SCALE_INDIAN, "page": "mayotte"},
+    # Le site ne publie pas de page pour les îles du Nord.
+    "VIGI978-977": {
+        "name": "Saint-Martin et Saint-Barthélemy",
+        "scale": SCALE_ANTILLES,
+        "page": None,
+    },
 }
 
 # Un phénomène outre-mer retrouve le `slug` de son équivalent métropolitain
