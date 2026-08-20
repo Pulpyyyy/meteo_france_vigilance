@@ -2,7 +2,7 @@
 
 Remplace le montage décrit sur le forum HACF et repris dans cette
 configuration : trois capteurs `command_line` (curl + jq + base64), deux
-caméras `local_file` alimentées par des PNG écrits dans `www/`, et une
+vignettes `local_file` alimentées par des PNG écrits dans `www/`, et une
 automatisation chargée de relancer le tout et de réessayer quand l'API bégaie.
 
 Ce que le composant reprend à son compte :
@@ -41,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
-PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CAMERA]
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.IMAGE]
 
 type VigilanceConfigEntry = ConfigEntry[VigilanceCoordinator]
 

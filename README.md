@@ -30,8 +30,8 @@ configuration, deux capteurs par département, deux caméras, une composition de
   couleur de vigilance (`green`, `yellow`, `orange`, `red`), traduite par Home
   Assistant ; les phénomènes, leurs créneaux horaires et le commentaire
   national sont en attributs.
-- **Deux cartes de France** pour les données nationales J et J+1, gardées en mémoire —
-  rien n'est écrit dans `www/`.
+- **Deux cartes de France** pour les données nationales J et J+1, publiées en
+  entités `image` et gardées en mémoire — rien n'est écrit dans `www/`.
 - **Carte Lovelace embarquée** : servie et enregistrée automatiquement par le
   composant, aucune ressource à déclarer, aucune dépendance (ni mushroom, ni
   auto-entities, ni card-mod).
@@ -150,7 +150,13 @@ journée entière — et `timeline`, la liste des créneaux colorés de la péri
 (c'est elle qui alimente la disposition *chronologie* de la carte).
 
 Et sur l'appareil de l'intégration, les deux vignettes nationales :
-`camera.vigilance_meteo_france_carte_aujourd_hui` et `…_carte_demain`.
+`image.vigilance_meteo_france_carte_aujourd_hui` et `…_carte_demain`.
+
+> **Depuis la v2.0**, ce sont des entités `image` et non plus `camera` :
+> c'est le type que Home Assistant destine à une image qui change de temps
+> en temps, et sa fiche est plus légère que celle d'une caméra. Un tableau
+> de bord qui nommait `camera.vigilance_…` en dur est à corriger ; la carte
+> livrée avec l'intégration, elle, retrouve les deux formes toute seule.
 
 ### Action `meteo_france_vigilance.refresh`
 

@@ -12,7 +12,7 @@
  * Ici, rien de tout cela n'est dans la configuration : les noms, les icônes et
  * les couleurs viennent des attributs du capteur, où le composant les a déjà
  * mis. La carte ne reçoit qu'une entité, et retrouve seule les trois autres —
- * le capteur de demain et les deux caméras — par l'identifiant d'entrée que
+ * le capteur de demain et les deux vignettes — par l'identifiant d'entrée que
  * chacune porte en attribut.
  *
  * DEUX AXES DE PRÉSENTATION, indépendants l'un de l'autre :
@@ -277,9 +277,9 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       return Boolean(attrs?.entry_id && (attrs.department || attrs.integration === INTEGRATION));
     };
 
-    // Une caméra désignée renvoie au capteur du même département : la carte se
-    // configure avec un capteur, mais on ne peut pas reprocher à quelqu'un
-    // d'avoir cliqué sur la vignette.
+    // Une vignette désignée renvoie au capteur du même département : la carte
+    // se configure avec un capteur, mais on ne peut pas reprocher à quelqu'un
+    // d'avoir cliqué sur l'image.
     const toSensor = (id) => {
       if (id.startsWith("sensor.")) return id;
       const entryId = hass.states[id]?.attributes.entry_id;
@@ -399,7 +399,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       return this._resolved;
     }
 
-    const found = { key, sensors: {}, cameras: {} };
+    const found = { key, sensors: {}, maps: {} };
 
     for (const [id, state] of Object.entries(hass.states)) {
       const attrs = state.attributes;
@@ -407,8 +407,14 @@ class MeteoFranceVigilanceCard extends HTMLElement {
 
       if (id.startsWith("sensor.") && attrs.department === department) {
         found.sensors[attrs.period] = id;
-      } else if (id.startsWith("camera.") && attrs.integration === INTEGRATION) {
-        found.cameras[attrs.period] = id;
+      } else if (
+        // `image.` depuis la v2, `camera.` avant elle : une carte doit
+        // continuer d'afficher les vignettes d'une installation qui n'a pas
+        // encore migré.
+        (id.startsWith("image.") || id.startsWith("camera.")) &&
+        attrs.integration === INTEGRATION
+      ) {
+        found.maps[attrs.period] = id;
       }
     }
 
@@ -417,7 +423,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     found.sensors[base.attributes.period || "today"] ??= this._config.entity;
     found.department = department;
     found.name = base.attributes.department_name || department;
-    found.ids = [...Object.values(found.sensors), ...Object.values(found.cameras)];
+    found.ids = [...Object.values(found.sensors), ...Object.values(found.maps)];
     this._resolved = found;
     return found;
   }
@@ -920,12 +926,12 @@ class MeteoFranceVigilanceCard extends HTMLElement {
   }
 
   _setMap(parts, resolved, period, attrs) {
-    const cameraId = resolved.cameras[period];
-    const camera = cameraId ? this._hass.states[cameraId] : null;
-    const picture = camera?.attributes.entity_picture;
+    const mapId = resolved.maps[period];
+    const map = mapId ? this._hass.states[mapId] : null;
+    const picture = map?.attributes.entity_picture;
     // Masquée tant qu'aucune image n'est arrivée, ce que faisait la condition
     // de visibilité des `picture-entity`.
-    const show = this._config.show_map && picture && camera.state !== "unavailable";
+    const show = this._config.show_map && picture && map.state !== "unavailable";
 
     parts.mapWrap.style.display = show ? "" : "none";
     if (!show) return;
@@ -937,9 +943,9 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       parts.mapWrap.style.setProperty("--map-src", `url("${picture}")`);
       parts.src = picture;
     }
-    // La vignette porte les mêmes actions que le bloc, mais sur la caméra :
-    // « more-info » sans entité y ouvre l'image, pas le capteur.
-    this._bindActions(parts.map, cameraId);
+    // La vignette porte les mêmes actions que le bloc, mais sur l'image :
+    // « more-info » sans entité y ouvre la vignette, pas le capteur.
+    this._bindActions(parts.map, mapId);
   }
 
   _phenomena(attrs) {

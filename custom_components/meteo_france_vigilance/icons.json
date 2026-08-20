@@ -1,6 +1,6 @@
 {
   "entity": {
-    "camera": {
+    "image": {
       "map_today": {
         "default": "mdi:map-marker-alert"
       },

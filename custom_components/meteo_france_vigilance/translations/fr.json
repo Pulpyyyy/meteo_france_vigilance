@@ -13,7 +13,7 @@
         "data_description": {
           "api_key": "La clé d'application affichée sur portail-api.meteofrance.fr, dans votre abonnement « DonneesPubliquesVigilance ».",
           "departments": "Un ou plusieurs codes de département. Les zones littorales peuvent être saisies directement (3010, 6410…).",
-          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en caméras.",
+          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en images.",
           "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation."
         }
       },
@@ -55,7 +55,7 @@
         },
         "data_description": {
           "departments": "Un ou plusieurs codes de département. Les zones littorales peuvent être saisies directement (3010, 6410…).",
-          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en caméras.",
+          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en images.",
           "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation."
         }
       }
@@ -87,7 +87,7 @@
         }
       }
     },
-    "camera": {
+    "image": {
       "map_today": {
         "name": "Carte aujourd'hui"
       },

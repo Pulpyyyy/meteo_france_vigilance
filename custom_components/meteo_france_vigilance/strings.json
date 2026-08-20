@@ -13,7 +13,7 @@
         "data_description": {
           "api_key": "The application key shown on portail-api.meteofrance.fr, under your « DonneesPubliquesVigilance » subscription.",
           "departments": "One or more department codes. Coastal areas can be typed in directly (3010, 6410…).",
-          "maps": "The two national thumbnails, today and tomorrow, published as camera entities.",
+          "maps": "The two national thumbnails, today and tomorrow, published as image entities.",
           "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens."
         }
       },
@@ -55,7 +55,7 @@
         },
         "data_description": {
           "departments": "One or more department codes. Coastal areas can be typed in directly (3010, 6410…).",
-          "maps": "The two national thumbnails, today and tomorrow, published as camera entities.",
+          "maps": "The two national thumbnails, today and tomorrow, published as image entities.",
           "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens."
         }
       }
@@ -87,7 +87,7 @@
         }
       }
     },
-    "camera": {
+    "image": {
       "map_today": {
         "name": "Map today"
       },

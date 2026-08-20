@@ -1,7 +1,7 @@
 """Base commune aux entités : le rattachement aux appareils.
 
 Deux niveaux d'appareils, et c'est délibéré : un appareil « service » pour
-l'entrée, qui porte les cartes nationales, et un appareil par département, qui
+l'entrée, qui porte les vignettes nationales, et un appareil par département, qui
 porte ses deux capteurs. Suivre trois départements donne donc trois appareils
 nommés, au lieu d'une liste de six capteurs à distinguer par leur nom.
 """
