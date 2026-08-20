@@ -175,6 +175,12 @@ CYCLONE: Final[dict[str, str]] = {
 # menace étant portée par le capteur de phase cyclonique.
 COLORS_BY_SCALE: Final[dict[str, dict[int, dict[str, str | None]]]] = {
     SCALE_ANTILLES: {
+        # Le descriptif technique est explicite : « 1 : vert ("-1" pour le
+        # phénomène vagues-submersion) ». Et en alerte cyclonique orange ou
+        # rouge, seuls les vagues-submersion et le cyclone portent un niveau —
+        # tous les autres phénomènes valent -1. Ce n'est donc pas « sans
+        # objet », c'est « rien à signaler » : le vert.
+        -1: {"color": "green", "native": None, "name": "Vert"},
         0: {"color": "green", "native": "blue", "name": "Bleu"},
         1: {"color": "green", "native": None, "name": "Vert"},
         2: {"color": "yellow", "native": None, "name": "Jaune"},
@@ -184,6 +190,7 @@ COLORS_BY_SCALE: Final[dict[str, dict[int, dict[str, str | None]]]] = {
         6: {"color": "red", "native": "grey", "name": "Gris"},
     },
     SCALE_INDIAN: {
+        -1: {"color": "green", "native": None, "name": "Vert"},
         1: {"color": "green", "native": None, "name": "Vert"},
         2: {"color": "yellow", "native": None, "name": "Jaune"},
         3: {"color": "orange", "native": "orange_hatched", "name": "Orange hachuré"},

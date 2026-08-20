@@ -141,8 +141,6 @@ class VigilanceOmCoordinator(DataUpdateCoordinator[VigilanceData]):
             self._phenomenon(code, scale, item, timelines)
             for item in payload.get("phenomenons_items") or []
         ]
-        # Ce qui ne s'applique pas au bassin n'a rien à faire sur une carte.
-        phenomena = [p for p in phenomena if not p.pop("irrelevant", False)]
         # Le plus grave en tête, comme en métropole : l'ordre du service varie.
         phenomena.sort(key=lambda p: (-(p["color_id"] or 0), p["phenomenon_id"]))
 
@@ -207,11 +205,7 @@ class VigilanceOmCoordinator(DataUpdateCoordinator[VigilanceData]):
         begins = [s["begin_time"] for s in matching if s["begin_time"]]
         ends = [s["end_time"] for s in matching if s["end_time"]]
 
-        # Le service marque « sans objet » par -1 : ce n'est pas une couleur
-        # inconnue mais un phénomène qui ne s'applique pas ici — les
-        # vagues-submersion à l'intérieur des terres, par exemple.
         return {
-            "irrelevant": raw_color is not None and raw_color < 0,
             "phenomenon_id": phenomenon_id,
             "phenomenon_max_color_id": raw_color,
             # Le libellé du service quand on l'a — outre-mer, « Fortes pluies
