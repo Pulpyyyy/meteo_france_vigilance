@@ -1386,10 +1386,24 @@ class MeteoFranceVigilanceCard extends HTMLElement {
         font-size: 0.72em; font-weight: 600; letter-spacing: 0.01em;
         white-space: nowrap;
       }
-      /* Le niveau perd sa marge automatique quand la consigne la prend : sans
-         cela, les deux se disputeraient la droite de la ligne. */
-      .head:has(.notice:not([style*="none"])) .level { margin-left: 4px; }
-      .head:has(.notice:not([style*="none"])) .notice { margin-left: auto; }
+      /* La consigne suit le nom du jour, qu'elle qualifie ; le niveau garde
+         sa place à droite de la ligne. */
+      .notice { margin-right: auto; }
+
+      /* En compact, la ligne porte le nom du domaine, qui peut être long —
+         « Saint-Martin et Saint-Barthélemy » tient mal à côté d'une consigne
+         et de trois icônes. Le nom cède donc la place le premier, en
+         s'abrégeant, plutôt que de rejeter les icônes à la ligne suivante. */
+      .compact .head { flex-wrap: nowrap; }
+      .compact .label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      /* La consigne et le niveau ne se compriment jamais : ce sont eux qui
+         portent l'information. */
+      .compact .notice, .compact .level, .compact .icon-row { flex: 0 0 auto; }
 
       .stale {
         position: absolute; top: 6px; left: 6px;
