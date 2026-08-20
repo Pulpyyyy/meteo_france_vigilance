@@ -13,30 +13,68 @@ continue de recevoir les correctifs.
 
 Les deux sont cassants — d'où la version majeure.
 
-## Le point bloquant : par où arrivent les données ?
+## Par où arrivent les données : résolu
 
-Le descriptif technique officiel (`descriptif_technique_vigilance_outre_mer_v5`,
-10/04/2025) décrit un **fichier ZIP unique**, mis à jour toutes les minutes, à
-`vigilance.meteofrance.com/data/vigilance_OM.zip`, accompagné d'un fichier de
-contrôle portant un checksum (on ne retélécharge le ZIP que si le checksum a
-changé).
+Le flux documenté par le descriptif technique — un ZIP à
+`vigilance.meteofrance.com/data/vigilance_OM.zip`, mis à jour chaque minute —
+**ne répond plus** : le domaine `.com` ne résout pas, son équivalent `.fr`
+répond 403. Et il n'existe **pas** d'API outre-mer sur le portail public :
+`DPVigilance/v1/cartevigilance/encours` répond 401 (elle existe, clé requise),
+mais `DPVigilanceOutreMer`, `DPVigilanceOM` et les variantes répondent 404.
 
-**Ce flux ne répond plus** : le domaine `.com` ne résout pas, et son équivalent
-`.fr` répond 403 — l'accès semble désormais réservé aux titulaires d'une
-licence de diffusion. La fiche « Vigilance Outre-mer temps réel » de
-donneespubliques évoque un accès « via l'API du portail » sans nommer d'API.
+En revanche, **l'API qui alimente le site vigilance.meteofrance.fr sert bien
+l'outre-mer**, et c'est elle que retiennent les autres intégrations
+Home Assistant :
 
-**Première tâche, avec un compte connecté** : ouvrir
-<https://portail-api.meteofrance.fr/devportal/apis> et vérifier s'il existe une
-API outre-mer souscriptible. Trois issues possibles :
+```
+https://webservice.meteofrance.com/warning/full?domain=<DOMAINE>&token=<TOKEN>
+https://webservice.meteofrance.com/warning/dictionary?domain=<DOMAINE>&token=<TOKEN>
+```
 
-* une API REST outre-mer existe → cas idéal, on la traite comme DPVigilance ;
-* seule `DonneesPubliquesVigilance` existe et couvre aussi l'outre-mer → à
-  vérifier en interrogeant le bulletin avec un domaine `VIGI971` ;
-* rien de tel → la v2 se limite à la bascule `image`, et l'outre-mer attend une
-  ouverture de Météo France (à documenter comme tel, sans promesse).
+Le jeton est celui, public et figé, que le site embarque dans ses pages.
 
-Tant que ce point n'est pas tranché, aucun code outre-mer n'est écrit.
+Domaines vérifiés, qui répondent tous : `VIGI971` (Guadeloupe), `VIGI972`
+(Martinique), `VIGI973` (Guyane), `VIGI974` (Réunion), `VIGI976` (Mayotte),
+`VIGI978-977` (Saint-Martin / Saint-Barthélemy). Ce sont les identifiants du
+descriptif technique — un code numérique nu (`974`) est refusé.
+
+**Ce que cela implique, et qui doit être dit à l'utilisateur** : cette API
+n'est pas contractuelle. Elle n'est pas documentée par Météo France, son jeton
+peut être renouvelé, sa forme peut changer sans préavis — à l'inverse de
+DPVigilance, souscrite avec une clé personnelle. La métropole doit donc
+continuer de passer par DPVigilance ; l'outre-mer utilise cette voie faute
+d'alternative, et le composant doit le signaler clairement (documentation, et
+libellé de l'option) plutôt que de laisser croire à un accès officiel.
+
+## Le format réel, relevé sur l'API
+
+Réponse de `warning/full` (relevé sur `VIGI976`) :
+
+```
+update_time, end_validity_time, domain_id, color_max,
+timelaps[] -> { phenomenon_id, timelaps_items[] { begin_time, end_time, color_id } },
+phenomenons_items[] -> { phenomenon_id, phenomenon_max_color_id },
+advices, consequences, max_count_items, comments, text, text_avalanche
+```
+
+Les horodatages sont des entiers Unix, là où DPVigilance publie des chaînes
+ISO 8601 — la conversion est à faire à la lecture.
+
+`warning/dictionary` donne les tables officielles, à reprendre telles quelles
+plutôt qu'à recopier à la main :
+
+* **Phénomènes** : 1 Vents Forts · 9 Vagues-submersion · **10 Alerte
+  Cyclonique** · 12 Fortes pluies / Orages. Numérotation distincte de la
+  métropole : le 12 outre-mer correspond au 2 métropolitain, et le 2
+  métropolitain n'existe pas ici.
+* **Couleurs** : 1 vert · 2 jaune · 3 orange · 4 rouge, puis l'échelle
+  cyclonique propre à l'outre-mer — 6 bleu-gris, 7 blanc, 8 orange, 9 rouge,
+  10 violet. La valeur `-1` signale un phénomène sans objet à cet instant.
+
+Les teintes du dictionnaire diffèrent légèrement de celles de la carte
+métropole (`#31aa35` contre `#2e9e37` pour le vert) : garder les nôtres pour
+la cohérence visuelle, et n'utiliser le dictionnaire que pour les libellés et
+la structure.
 
 ## Ce qui change dans le modèle
 
