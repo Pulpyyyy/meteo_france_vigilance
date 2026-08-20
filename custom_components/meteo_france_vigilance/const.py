@@ -9,7 +9,7 @@ faire tomber la mise à jour.
 
 from __future__ import annotations
 
-from typing import Final
+from typing import Any, Final
 
 DOMAIN: Final = "meteo_france_vigilance"
 
@@ -110,6 +110,175 @@ COLORS: Final[dict[int, dict[str, str]]] = {
     4: {"slug": "red", "name": "Rouge", "hex": "#e01f1f"},
 }
 COLOR_SLUGS: Final[list[str]] = [COLORS[i]["slug"] for i in sorted(COLORS)]
+
+# ── Outre-mer ─────────────────────────────────────────────────────────────────
+# La vigilance outre-mer est un service distinct de DPVigilance, avec ses
+# propres tables — et elles ne sont pas les mêmes d'un bassin à l'autre : les
+# pluies-orages portent le numéro 2 aux Antilles et 12 dans l'océan Indien, et
+# le violet est la couleur 5 ici, 10 là-bas. Ce qui suit indexe donc tout par
+# échelle, et normalise vers les quatre couleurs de la métropole : l'état d'un
+# capteur reste « vert / jaune / orange / rouge » partout, pour qu'une
+# automation écrite pour la Gironde vaille aussi pour la Guadeloupe. Le niveau
+# réel du bassin, lui, est publié en attribut — voir `color_native`.
+
+SCALE_METROPOLE: Final = "metropole"
+SCALE_ANTILLES: Final = "antilles"
+SCALE_INDIAN: Final = "indian_ocean"
+
+# Bassins outre-mer, par identifiant de domaine de l'API.
+BASINS: Final[dict[str, dict[str, str]]] = {
+    "VIGI971": {"name": "Guadeloupe", "scale": SCALE_ANTILLES},
+    "VIGI972": {"name": "Martinique", "scale": SCALE_ANTILLES},
+    "VIGI973": {"name": "Guyane", "scale": SCALE_ANTILLES},
+    "VIGI974": {"name": "La Réunion", "scale": SCALE_INDIAN},
+    "VIGI976": {"name": "Mayotte", "scale": SCALE_INDIAN},
+    "VIGI978-977": {"name": "Saint-Martin et Saint-Barthélemy", "scale": SCALE_ANTILLES},
+}
+
+# Un phénomène outre-mer retrouve le `slug` de son équivalent métropolitain :
+# la carte et les modèles Jinja n'ont ainsi qu'un vocabulaire à connaître.
+# « Fortes pluies et orages » recouvre les deux phénomènes que la métropole
+# sépare (pluie-inondation et orages) : on retient `rain`, et le libellé du
+# bassin dit le reste.
+PHENOMENA_BY_SCALE: Final[dict[str, dict[int, str]]] = {
+    SCALE_ANTILLES: {1: "wind", 2: "rain", 9: "wave", 10: "cyclone"},
+    SCALE_INDIAN: {1: "wind", 12: "rain", 9: "wave", 10: "cyclone"},
+}
+
+CYCLONE: Final[dict[str, str]] = {
+    "slug": "cyclone",
+    "name": "Cyclone",
+    "icon": "mdi:weather-hurricane",
+}
+
+# Normalisation d'un niveau de bassin vers les quatre couleurs de la
+# métropole, et nom du niveau réel quand il n'a pas d'équivalent.
+#
+# Échelle publiée par Météo France aux Antilles : jaune, orange, rouge, puis
+# violet « confinez-vous » et gris « restez prudent », ces deux derniers
+# réservés aux cyclones. Le violet et le gris sont donc au-dessus du rouge et
+# s'y ramènent : dans les deux cas la consigne est de ne pas sortir.
+#
+# Le bleu (0) n'appartient pas à l'échelle publique — c'est une valeur
+# technique de l'API, comprise comme « pas de vigilance particulière » et
+# ramenée au vert.
+#
+# Dans l'océan Indien, les niveaux 3 et 4 sont « hachurés » : une vigilance
+# ordinaire doublée d'une menace cyclonique. Ils valent orange et rouge, la
+# menace étant portée par le capteur de phase cyclonique.
+COLORS_BY_SCALE: Final[dict[str, dict[int, dict[str, str | None]]]] = {
+    SCALE_ANTILLES: {
+        0: {"color": "green", "native": "blue", "name": "Bleu"},
+        1: {"color": "green", "native": None, "name": "Vert"},
+        2: {"color": "yellow", "native": None, "name": "Jaune"},
+        3: {"color": "orange", "native": None, "name": "Orange"},
+        4: {"color": "red", "native": None, "name": "Rouge"},
+        5: {"color": "red", "native": "purple", "name": "Violet"},
+        6: {"color": "red", "native": "grey", "name": "Gris"},
+    },
+    SCALE_INDIAN: {
+        1: {"color": "green", "native": None, "name": "Vert"},
+        2: {"color": "yellow", "native": None, "name": "Jaune"},
+        3: {"color": "orange", "native": "orange_hatched", "name": "Orange hachuré"},
+        4: {"color": "red", "native": "red_hatched", "name": "Rouge hachuré"},
+        6: {"color": "green", "native": "blue_grey", "name": "Bleu-gris"},
+        7: {"color": "yellow", "native": None, "name": "Jaune"},
+        8: {"color": "orange", "native": None, "name": "Orange"},
+        9: {"color": "red", "native": None, "name": "Rouge"},
+        10: {"color": "red", "native": "purple", "name": "Violet"},
+    },
+}
+
+# Teintes des niveaux que la métropole ne connaît pas. Les quatre couleurs
+# ordinaires gardent celles de COLORS, pour que la carte reste d'un seul ton.
+NATIVE_HEX: Final[dict[str, str]] = {
+    "blue": "#0093f4",
+    "purple": "#903078",
+    "grey": "#999999",
+    "blue_grey": "#5f8dd3",
+    "orange_hatched": "#f28c00",
+    "red_hatched": "#e01f1f",
+}
+
+# Phase cyclonique, publiée en capteur séparé là où le bassin la connaît.
+# C'est un dispositif préfectoral, pas une donnée d'API : l'énumération est
+# donc close, et écrite ici une fois pour toutes.
+CYCLONE_PHASES: Final[dict[str, list[int]]] = {
+    SCALE_ANTILLES: [3, 4, 5, 6],
+    SCALE_INDIAN: [3, 4, 6, 7, 8, 9, 10],
+}
+CYCLONE_PHASE_SLUGS: Final[list[str]] = [
+    "none",
+    "yellow",
+    "orange",
+    "red",
+    "purple",
+    "grey",
+]
+
+
+def basin_scale(domain_id: str) -> str:
+    """L'échelle d'un domaine : celle de son bassin, sinon la métropole."""
+    basin = BASINS.get(domain_id)
+    return basin["scale"] if basin else SCALE_METROPOLE
+
+
+def scale_color(scale: str, color_id: int | None) -> dict[str, Any] | None:
+    """Le niveau d'un bassin, ramené à l'échelle de la métropole.
+
+    Renvoie la couleur normalisée, le nom du niveau réel et sa teinte, ou None
+    si l'identifiant est inconnu de l'échelle — auquel cas le capteur passe à
+    « inconnu » plutôt que d'inventer une couleur, et une réparation le dit.
+    """
+    if scale == SCALE_METROPOLE:
+        found = COLORS.get(color_id) if color_id else None
+        if not found:
+            return None
+        return {
+            "color": found["slug"],
+            "color_name": found["name"],
+            "color_hex": found["hex"],
+            "native": None,
+        }
+
+    table = COLORS_BY_SCALE.get(scale, {})
+    found = table.get(color_id) if color_id is not None else None
+    if not found:
+        return None
+
+    native = found["native"]
+    normalised = str(found["color"])
+    return {
+        "color": normalised,
+        "color_name": found["name"],
+        # La teinte du niveau réel quand il sort de l'échelle métropole, celle
+        # de la couleur normalisée sinon.
+        "color_hex": NATIVE_HEX.get(str(native)) if native else _hex(normalised),
+        "native": native,
+    }
+
+
+def _hex(slug: str) -> str | None:
+    """La teinte d'une couleur métropole, par son slug."""
+    for entry in COLORS.values():
+        if entry["slug"] == slug:
+            return entry["hex"]
+    return None
+
+
+def scale_phenomenon(scale: str, phenomenon_id: int) -> dict[str, str]:
+    """Un phénomène, quel que soit le bassin, avec le vocabulaire commun."""
+    if scale == SCALE_METROPOLE:
+        return phenomenon(phenomenon_id)
+
+    slug = PHENOMENA_BY_SCALE.get(scale, {}).get(phenomenon_id)
+    if slug == CYCLONE["slug"]:
+        return CYCLONE
+    for entry in PHENOMENA.values():
+        if entry["slug"] == slug:
+            return entry
+    return UNKNOWN_PHENOMENON
+
 
 # ── Domaines ──────────────────────────────────────────────────────────────────
 # Les `domain_id` de l'API : les départements, plus « FRA » pour le national et

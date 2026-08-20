@@ -95,10 +95,56 @@ des tables qui divergeront. Nos quatre couleurs métropole restent la référenc
 visuelle (`#2e9e37` et suivantes) ; les teintes du dictionnaire ne servent
 qu'aux niveaux que la métropole ne connaît pas.
 
-L'état d'un capteur ne peut donc plus être une énumération de quatre valeurs
-communes à tous : soit on ajoute les niveaux outre-mer à l'énumération
-existante, soit on distingue les capteurs métropole des capteurs outre-mer.
-À trancher à l'étape 3.
+## L'état des capteurs : la décision
+
+Ni étendre l'énumération à tous les niveaux outre-mer, ni séparer les capteurs
+métropole des capteurs outre-mer. **Les niveaux des bassins sont normalisés
+vers les quatre couleurs de la métropole**, et le niveau réel est publié à
+côté.
+
+La raison est d'abord technique : la liste `options` d'un capteur d'énumération
+est écrite dans le registre d'entités, et l'enregistreur d'historique refuse un
+état qui n'y figure pas — l'entité tombe en erreur, pas seulement son
+historique. Une énumération qui suivrait les tables lues sur l'API casserait
+donc le jour où Météo France y ajoute une valeur. Et l'étendre à tous les
+niveaux imaginables réécrirait les capacités de **toutes** les entités, y
+compris métropolitaines : l'éditeur d'automatisations proposerait « violet » et
+« gris » pour la Creuse.
+
+Elle est ensuite d'usage : `to: "red"` doit valoir pour la Gironde comme pour
+la Guadeloupe. C'est la question que l'on pose à un composant de vigilance —
+« préviens-moi quand ça passe au rouge, où que ce soit ».
+
+Donc :
+
+* l'état reste `green`, `yellow`, `orange`, `red` partout ;
+* `color_native` porte le niveau réel quand il sort de l'échelle
+  (`purple`, `grey`, `blue`, `orange_hatched`…), avec `color_name` et
+  `color_hex` ;
+* `scale` et `basin` disent d'où vient la mesure ;
+* **la phase cyclonique devient un capteur à part**, créé seulement là où le
+  bassin la connaît — ni en métropole, ni en Guyane. C'est une dimension
+  distincte de l'intensité : « orange hachuré » dans l'océan Indien, c'est une
+  vigilance orange *et* une menace cyclonique. Son énumération est close et
+  écrite en dur : les phases sont un dispositif préfectoral, pas une donnée
+  d'API.
+
+Le coût est réel et doit être dit dans la documentation : **violet et gris se
+ramènent tous deux à `red`**, donc un passage de violet à gris ne change pas
+l'état du capteur principal. Il change `color_native`, et le capteur de phase
+cyclonique, lui, bouge.
+
+Vérifié auprès de Météo France avant de figer les tables : aux Antilles, le
+violet est « confinez-vous » et le gris « restez prudent » — tous deux
+au-dessus du rouge, d'où leur normalisation vers `red`. Le bleu (0) n'existe
+pas dans l'échelle publiée : c'est une valeur technique de l'API, ramenée au
+vert.
+
+Enfin, un détail qui aurait été un vrai défaut : le seuil d'alerte de la carte
+compare aujourd'hui `color_id >= 3`. Dans l'océan Indien, 3 est « orange
+hachuré » mais 7 est « jaune » — le seuil numérique aurait mis la carte en
+alerte sur les phases basses et au calme sur les hautes. Il doit porter sur la
+couleur normalisée.
 
 ## Ce qui change dans le modèle
 
