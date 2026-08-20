@@ -200,6 +200,24 @@ Deux exceptions, qui portent leur propre `slug` :
   quelqu'un qui filtre sur `rain` croirait exclure les orages. Le composant
   suit ici la lettre du descriptif technique plutôt que la commodité.
 
+## Comment nommer ce qui est suivi
+
+Les libellés parlaient de « département », ce qui ne convient pas à la
+Guadeloupe. Le vocabulaire retenu est celui de Météo France, relevé sur son
+site et dans son descriptif technique : « département » pour la métropole,
+« outre-mer » comme regroupement — **il n'existe pas de terme générique
+unique** couvrant les deux, le site lui-même n'en emploie aucun.
+
+Les libellés de la carte disent donc « département ou territoire d'outre-mer »
+là où les deux sont visés. Le titre reste « Vigilance <nom du domaine> », qui
+convient à la Guadeloupe comme au Loiret. Le descriptif technique, lui, parle
+de « domaine global » et de « zone de vigilance » — un vocabulaire d'API, trop
+abstrait pour un écran.
+
+L'attribut `department` ne bouge pas : c'est le contrat que lisent la carte et
+les modèles Jinja hérités du montage d'origine. `domain` et `basin` s'ajoutent
+à côté.
+
 ## L'image d'un territoire
 
 Météo France publie une vignette par bassin — la silhouette peinte de la
