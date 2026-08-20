@@ -36,7 +36,9 @@ from homeassistant.helpers.selector import (
 
 from .api import VigilanceApi, VigilanceApiError, VigilanceAuthError
 from .const import (
+    BASINS,
     CONF_API_KEY,
+    CONF_BASINS,
     CONF_DEPARTMENTS,
     CONF_MAPS,
     CONF_SCAN_INTERVAL,
@@ -75,6 +77,19 @@ DEPARTMENT_SELECTOR = SelectSelector(
     )
 )
 
+# Les bassins d'outre-mer, dans l'ordre où Météo France les présente.
+BASIN_SELECTOR = SelectSelector(
+    SelectSelectorConfig(
+        options=[
+            SelectOptionDict(value=code, label=basin["name"])
+            for code, basin in BASINS.items()
+        ],
+        multiple=True,
+        mode=SelectSelectorMode.DROPDOWN,
+        sort=False,
+    )
+)
+
 INTERVAL_SELECTOR = NumberSelector(
     NumberSelectorConfig(
         min=MIN_SCAN_INTERVAL,
@@ -97,12 +112,20 @@ API_KEY_SCHEMA = vol.Schema(
 
 
 def _settings_schema(defaults: Mapping[str, Any]) -> vol.Schema:
-    """Ce qui est modifiable après coup : les départements et le rythme."""
+    """Ce qui est modifiable après coup : les domaines suivis et le rythme.
+
+    Les départements et les bassins sont deux listes distinctes parce que ce
+    sont deux services : la métropole demande une clé d'API personnelle,
+    l'outre-mer non. On peut ne remplir que l'une des deux.
+    """
     return vol.Schema(
         {
-            vol.Required(
+            vol.Optional(
                 CONF_DEPARTMENTS, default=list(defaults.get(CONF_DEPARTMENTS, []))
             ): DEPARTMENT_SELECTOR,
+            vol.Optional(
+                CONF_BASINS, default=list(defaults.get(CONF_BASINS, []))
+            ): BASIN_SELECTOR,
             vol.Required(
                 CONF_MAPS, default=defaults.get(CONF_MAPS, True)
             ): BooleanSelector(),
@@ -115,13 +138,29 @@ def _settings_schema(defaults: Mapping[str, Any]) -> vol.Schema:
 
 
 async def _async_validate(
-    hass, api_key: str, departments: list[str]
+    hass,
+    api_key: str,
+    departments: list[str],
+    basins: list[str] | None = None,
 ) -> tuple[dict[str, str], list[str]]:
-    """Appeler l'API et vérifier que les départements demandés y figurent.
+    """Vérifier ce que l'utilisateur a demandé, avant de l'enregistrer.
 
     Renvoie les erreurs de formulaire et la liste des domaines connus du
-    bulletin — la seconde sert à écrire un message qui nomme ce qui manque.
+    bulletin métropolitain — la seconde sert à écrire un message qui nomme ce
+    qui manque.
     """
+    basins = basins or []
+    if not departments and not basins:
+        return {"base": "nothing_selected"}, []
+
+    # Sans département, il n'y a rien à demander à DPVigilance : suivre la
+    # Réunion seule ne réclame aucune clé d'API.
+    if not departments:
+        return {}, []
+
+    if not api_key:
+        return {CONF_API_KEY: "api_key_required"}, []
+
     # Un seul essai : le formulaire attend, et resoummettre relance. L'échelle
     # complète de nouveaux essais reste celle du coordinateur.
     api = VigilanceApi(async_get_clientsession(hass), api_key, retries=1)
@@ -157,16 +196,18 @@ class VigilanceConfigFlow(ConfigFlow, domain=DOMAIN):
         placeholders: dict[str, str] = {}
 
         if user_input is not None:
-            departments = list(user_input[CONF_DEPARTMENTS])
+            departments = list(user_input.get(CONF_DEPARTMENTS) or [])
+            basins = list(user_input.get(CONF_BASINS) or [])
             errors, known = await _async_validate(
-                self.hass, user_input[CONF_API_KEY], departments
+                self.hass, user_input.get(CONF_API_KEY, ""), departments, basins
             )
             if not errors:
                 return self.async_create_entry(
                     title="Vigilance Météo France",
                     data={
-                        CONF_API_KEY: user_input[CONF_API_KEY].strip(),
+                        CONF_API_KEY: user_input.get(CONF_API_KEY, "").strip(),
                         CONF_DEPARTMENTS: departments,
+                        CONF_BASINS: basins,
                     },
                     options={
                         CONF_MAPS: user_input[CONF_MAPS],
@@ -179,9 +220,12 @@ class VigilanceConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
 
         defaults = user_input or {CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL}
+        # Facultative ici, et exigée par la validation dès qu'un département
+        # métropolitain est demandé : suivre l'outre-mer seul n'appelle aucune
+        # clé.
         schema = vol.Schema(
             {
-                vol.Required(
+                vol.Optional(
                     CONF_API_KEY, default=defaults.get(CONF_API_KEY, "")
                 ): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
             }
@@ -212,6 +256,7 @@ class VigilanceConfigFlow(ConfigFlow, domain=DOMAIN):
                 self.hass,
                 user_input[CONF_API_KEY],
                 list(entry.data.get(CONF_DEPARTMENTS, [])),
+                list(entry.data.get(CONF_BASINS, [])),
             )
             if not errors:
                 return self.async_update_reload_and_abort(
@@ -247,6 +292,7 @@ class VigilanceConfigFlow(ConfigFlow, domain=DOMAIN):
                 self.hass,
                 user_input[CONF_API_KEY],
                 list(entry.data.get(CONF_DEPARTMENTS, [])),
+                list(entry.data.get(CONF_BASINS, [])),
             )
             if not errors:
                 return self.async_update_reload_and_abort(
@@ -279,17 +325,22 @@ class VigilanceOptionsFlow(OptionsFlow):
         placeholders: dict[str, str] = {}
 
         if user_input is not None:
-            departments = list(user_input[CONF_DEPARTMENTS])
+            departments = list(user_input.get(CONF_DEPARTMENTS) or [])
+            basins = list(user_input.get(CONF_BASINS) or [])
             errors, known = await _async_validate(
-                self.hass, entry.data[CONF_API_KEY], departments
+                self.hass, entry.data.get(CONF_API_KEY, ""), departments, basins
             )
             if not errors:
-                # Le département vit dans `data` — il définit les entités — et
-                # le reste dans `options`. Les deux sont écrits ici pour que
-                # tout soit modifiable depuis un seul écran.
+                # Les domaines suivis vivent dans `data` — ils définissent les
+                # entités — et le reste dans `options`. Les deux sont écrits
+                # ici pour que tout soit modifiable depuis un seul écran.
                 self.hass.config_entries.async_update_entry(
                     entry,
-                    data={**entry.data, CONF_DEPARTMENTS: departments},
+                    data={
+                        **entry.data,
+                        CONF_DEPARTMENTS: departments,
+                        CONF_BASINS: basins,
+                    },
                 )
                 return self.async_create_entry(
                     data={

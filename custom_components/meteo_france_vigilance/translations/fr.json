@@ -8,13 +8,15 @@
           "api_key": "Clé d'API",
           "departments": "Départements",
           "maps": "Télécharger les cartes nationales",
-          "scan_interval": "Intervalle de mise à jour"
+          "scan_interval": "Intervalle de mise à jour",
+          "basins": "Territoires d'outre-mer"
         },
         "data_description": {
-          "api_key": "La clé d'application affichée sur portail-api.meteofrance.fr, dans votre abonnement « DonneesPubliquesVigilance ».",
-          "departments": "Un ou plusieurs codes de département. Les zones littorales peuvent être saisies directement (3010, 6410…).",
-          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en images.",
-          "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation."
+          "api_key": "La clé d'application affichée sur portail-api.meteofrance.fr, dans votre abonnement « DonneesPubliquesVigilance ». Nécessaire seulement pour les départements métropolitains.",
+          "departments": "Un ou plusieurs codes de département métropolitain. Les zones littorales peuvent être saisies directement (3010, 6410…). Laissez vide pour ne suivre que l'outre-mer.",
+          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en images. Métropole uniquement.",
+          "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation.",
+          "basins": "Guadeloupe, Martinique, Guyane, La Réunion, Mayotte, Saint-Martin et Saint-Barthélemy. Aucune clé n'est nécessaire pour ces territoires : leurs données proviennent du site de vigilance de Météo France, et non de l'API publique — Météo France n'en publie pas pour l'outre-mer. Cet accès n'est pas contractuel et peut changer sans préavis."
         }
       },
       "reauth_confirm": {
@@ -35,7 +37,9 @@
     "error": {
       "cannot_connect": "Météo France n'a pas répondu. Vérifiez la connexion et réessayez.",
       "invalid_auth": "Clé refusée par Météo France.",
-      "unknown_department": "Inconnu du bulletin : {unknown}"
+      "unknown_department": "Inconnu du bulletin : {unknown}",
+      "nothing_selected": "Choisissez au moins un département ou un territoire d'outre-mer.",
+      "api_key_required": "Une clé d'API est nécessaire pour suivre des départements métropolitains."
     },
     "abort": {
       "reauth_successful": "La clé a été remplacée.",
@@ -51,19 +55,23 @@
         "data": {
           "departments": "Départements",
           "maps": "Télécharger les cartes nationales",
-          "scan_interval": "Intervalle de mise à jour"
+          "scan_interval": "Intervalle de mise à jour",
+          "basins": "Territoires d'outre-mer"
         },
         "data_description": {
-          "departments": "Un ou plusieurs codes de département. Les zones littorales peuvent être saisies directement (3010, 6410…).",
-          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en images.",
-          "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation."
+          "departments": "Un ou plusieurs codes de département métropolitain. Les zones littorales peuvent être saisies directement (3010, 6410…). Laissez vide pour ne suivre que l'outre-mer.",
+          "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en images. Métropole uniquement.",
+          "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation.",
+          "basins": "Guadeloupe, Martinique, Guyane, La Réunion, Mayotte, Saint-Martin et Saint-Barthélemy. Aucune clé n'est nécessaire pour ces territoires : leurs données proviennent du site de vigilance de Météo France, et non de l'API publique — Météo France n'en publie pas pour l'outre-mer. Cet accès n'est pas contractuel et peut changer sans préavis."
         }
       }
     },
     "error": {
       "cannot_connect": "Météo France n'a pas répondu. Vérifiez la connexion et réessayez.",
       "invalid_auth": "Clé refusée par Météo France.",
-      "unknown_department": "Inconnu du bulletin : {unknown}"
+      "unknown_department": "Inconnu du bulletin : {unknown}",
+      "nothing_selected": "Choisissez au moins un département ou un territoire d'outre-mer.",
+      "api_key_required": "Une clé d'API est nécessaire pour suivre des départements métropolitains."
     }
   },
   "entity": {

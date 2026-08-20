@@ -8,13 +8,15 @@
           "api_key": "API key",
           "departments": "Departments",
           "maps": "Download the national maps",
-          "scan_interval": "Update interval"
+          "scan_interval": "Update interval",
+          "basins": "Overseas territories"
         },
         "data_description": {
-          "api_key": "The application key shown on portail-api.meteofrance.fr, under your « DonneesPubliquesVigilance » subscription.",
-          "departments": "One or more department codes. Coastal areas can be typed in directly (3010, 6410…).",
-          "maps": "The two national thumbnails, today and tomorrow, published as image entities.",
-          "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens."
+          "api_key": "The application key shown on portail-api.meteofrance.fr, under your « DonneesPubliquesVigilance » subscription. Only needed for mainland departments.",
+          "departments": "One or more mainland department codes. Coastal areas can be typed in directly (3010, 6410…). Leave empty to follow the overseas territories only.",
+          "maps": "The two national thumbnails, today and tomorrow, published as image entities. Mainland only.",
+          "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens.",
+          "basins": "Guadeloupe, Martinique, French Guiana, Réunion, Mayotte, Saint Martin and Saint Barthélemy. No key is needed for these territories: their data comes from the Météo France vigilance website rather than the public API — Météo France publishes none for the overseas territories. This access is not contractual and may change without notice."
         }
       },
       "reauth_confirm": {
@@ -35,7 +37,9 @@
     "error": {
       "cannot_connect": "Météo France did not answer. Check the connection and try again.",
       "invalid_auth": "Key refused by Météo France.",
-      "unknown_department": "Unknown to the bulletin: {unknown}"
+      "unknown_department": "Unknown to the bulletin: {unknown}",
+      "nothing_selected": "Choose at least one department or overseas territory.",
+      "api_key_required": "An API key is needed to follow mainland departments."
     },
     "abort": {
       "reauth_successful": "The key has been replaced.",
@@ -51,19 +55,23 @@
         "data": {
           "departments": "Departments",
           "maps": "Download the national maps",
-          "scan_interval": "Update interval"
+          "scan_interval": "Update interval",
+          "basins": "Overseas territories"
         },
         "data_description": {
-          "departments": "One or more department codes. Coastal areas can be typed in directly (3010, 6410…).",
-          "maps": "The two national thumbnails, today and tomorrow, published as image entities.",
-          "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens."
+          "departments": "One or more mainland department codes. Coastal areas can be typed in directly (3010, 6410…). Leave empty to follow the overseas territories only.",
+          "maps": "The two national thumbnails, today and tomorrow, published as image entities. Mainland only.",
+          "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens.",
+          "basins": "Guadeloupe, Martinique, French Guiana, Réunion, Mayotte, Saint Martin and Saint Barthélemy. No key is needed for these territories: their data comes from the Météo France vigilance website rather than the public API — Météo France publishes none for the overseas territories. This access is not contractual and may change without notice."
         }
       }
     },
     "error": {
       "cannot_connect": "Météo France did not answer. Check the connection and try again.",
       "invalid_auth": "Key refused by Météo France.",
-      "unknown_department": "Unknown to the bulletin: {unknown}"
+      "unknown_department": "Unknown to the bulletin: {unknown}",
+      "nothing_selected": "Choose at least one department or overseas territory.",
+      "api_key_required": "An API key is needed to follow mainland departments."
     }
   },
   "entity": {
