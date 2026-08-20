@@ -173,7 +173,7 @@ départements, à la configuration.
 
 | Thème clair | Thème sombre |
 |:---:|:---:|
-| <img src="images/outre-mer-light.png" alt="Trois territoires d'outre-mer, thème clair" width="380"> | <img src="images/outre-mer-dark.png" alt="Trois territoires d'outre-mer, thème sombre" width="380"> |
+| <img src="images/outre-mer-light.png" alt="Les six territoires d'outre-mer, thème clair" width="380"> | <img src="images/outre-mer-dark.png" alt="Les six territoires d'outre-mer, thème sombre" width="380"> |
 
 **Aucune clé d'API n'est nécessaire** pour l'outre-mer : ces données ne
 viennent pas de DPVigilance, que Météo-France ne publie que pour la métropole,
@@ -206,11 +206,11 @@ La chronologie donne l'heure de l'alerte, comme en métropole :
 |:---:|:---:|
 | <img src="images/outre-mer-chrono-light.png" alt="Chronologie d'une alerte cyclonique, thème clair" width="380"> | <img src="images/outre-mer-chrono-dark.png" alt="Chronologie d'une alerte cyclonique, thème sombre" width="380"> |
 
-Et la disposition compacte empile les territoires sur une ligne chacun :
+Et la disposition compacte les empile, une ligne chacun :
 
 | Thème clair | Thème sombre |
 |:---:|:---:|
-| <img src="images/outre-mer-compact-light.png" alt="Trois territoires en disposition compacte, thème clair" width="380"> | <img src="images/outre-mer-compact-dark.png" alt="Trois territoires en disposition compacte, thème sombre" width="380"> |
+| <img src="images/outre-mer-compact-light.png" alt="Les six territoires en disposition compacte, thème clair" width="380"> | <img src="images/outre-mer-compact-dark.png" alt="Les six territoires en disposition compacte, thème sombre" width="380"> |
 
 ### Attributs propres aux territoires
 

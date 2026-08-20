@@ -373,6 +373,26 @@ const omCalm = basin(states, "om3", "VIGI976", "green", null, [
   OP(DAY, "wave", "Vagues-submersion", "mdi:waves-arrow-up", "green", 6, 24),
 ], "none");
 
+// Les trois autres territoires, chacun dans un état différent : la planche
+// montre ainsi les six domaines et toute l'échelle des couleurs.
+const omMartinique = basin(states, "om4", "VIGI972", "yellow", null, [
+  OP(DAY, "rain_thunderstorm", "Fortes pluies et orages", "mdi:weather-lightning-rainy", "yellow", 12, 22),
+  OP(DAY, "wind", "Vents violents", "mdi:weather-windy", "green", 6, 24),
+], "none");
+
+const omGuyane = basin(states, "om5", "VIGI973", "red", null, [
+  OP(DAY, "rain_thunderstorm", "Fortes pluies et orages", "mdi:weather-lightning-rainy", "red", 8, 20,
+     [[6, 8, "orange"], [8, 20, "red"], [20, 24, "orange"]]),
+  OP(DAY, "wind", "Vents violents", "mdi:weather-windy", "yellow", 10, 18),
+], null);
+
+// Le gris : la phase de sauvegarde, après le passage du phénomène.
+const omNord = basin(states, "om6", "VIGI978-977", "red", "grey", [
+  OP(DAY, "cyclone", "Cyclone", "mdi:weather-hurricane", "red", 6, 24,
+     [[0, 12, "purple"], [12, 24, "grey"]]),
+  OP(DAY, "wave", "Vagues-submersion", "mdi:waves-arrow-up", "orange", 6, 24),
+], "grey");
+
 const hass = {
   locale: { language: "fr" },
   themes: { darkMode: dark },
@@ -427,14 +447,17 @@ try {
     stage.style.alignItems = "start";
     card({ entity: omCyclone, periods: "today" }, "La Réunion — alerte cyclonique orange", HEX.orange, 300);
     card({ entity: omPurple, periods: "today" }, "Guadeloupe — violet, confinez-vous", "#903078", 300);
+    card({ entity: omGuyane, periods: "today" }, "Guyane — rouge, pas de cyclone ici", HEX.red, 300);
+    card({ entity: omMartinique, periods: "today" }, "Martinique — jaune", HEX.yellow, 300);
+    card({ entity: omNord, periods: "today" }, "St-Martin / St-Barth — gris, phase de sauvegarde", "#999999", 300);
     card({ entity: omCalm, periods: "today" }, "Mayotte — rien à signaler", HEX.green, 300);
   } else if (page === "outre-mer-compact") {
     // La disposition compacte n'affiche aucune carte : c'est son objet, tenir
     // sur une ligne pour empiler plusieurs territoires.
     stage.style.gridTemplateColumns = "430px";
-    card({ entity: omCyclone, periods: "today", layout: "compact" }, null, null, 430);
-    card({ entity: omPurple, periods: "today", layout: "compact" }, null, null, 430);
-    card({ entity: omCalm, periods: "today", layout: "compact" }, null, null, 430);
+    for (const e of [omCyclone, omPurple, omGuyane, omMartinique, omNord, omCalm]) {
+      card({ entity: e, periods: "today", layout: "compact" }, null, null, 430);
+    }
   } else if (page === "outre-mer-chrono") {
     stage.style.gridTemplateColumns = "430px";
     card({ entity: omCyclone, periods: "today", layout: "chronologie" }, null, null, 430);

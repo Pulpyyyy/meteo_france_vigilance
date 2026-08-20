@@ -22,8 +22,8 @@ chrome --headless=new --disable-gpu --allow-file-access-from-files \
 | `layout-focus` | disposition focus | 470,680 |
 | `layout-compact` | disposition compact | 470,200 |
 | `layout-chrono` | disposition chronologie | 470,600 |
-| `outre-mer` | trois territoires : alerte cyclonique, violet, calme | 980,570 |
-| `outre-mer-compact` | trois territoires empilés en compact | 470,320 |
+| `outre-mer` | les six territoires, un état chacun | 980,1120 |
+| `outre-mer-compact` | les six territoires empilés en compact | 470,600 |
 | `outre-mer-chrono` | chronologie d'une alerte cyclonique | 470,330 |
 
 Chaque page existe en `mode=light` et `mode=dark`. Les fichiers vont dans
