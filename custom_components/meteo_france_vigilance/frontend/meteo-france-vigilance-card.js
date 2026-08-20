@@ -1427,7 +1427,12 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       /* Posée sur l'image, la consigne se lit en bas à gauche — le badge
          « périmé » occupe le haut, et les deux ne se rencontrent jamais. */
       .notice.on-map {
-        position: absolute; bottom: 8px; left: 8px;
+        position: absolute;
+        /* Au bord du bloc, comme les puces de phénomènes juste en dessous :
+           un décalage, même de huit pixels, se voit quand deux rangées se
+           suivent. Le badge « périmé », lui, garde sa marge — il est seul en
+           haut de l'image, et un texte clair collé au bord se lirait mal. */
+        bottom: 6px; left: 0;
         z-index: 2;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
       }
