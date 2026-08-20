@@ -664,7 +664,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       <div class="head">
         <span class="dot"></span>
         <span class="label">${escapeHtml(label)}</span>
-        <span class="notice" style="display:none"></span>
+        <span class="notice inline" style="display:none"></span>
         <span class="level"></span>
       </div>`;
   }
@@ -681,6 +681,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
               <img class="map" alt="${t[period]}" />
               <div class="inset-mask"></div>
               <div class="stale" style="display:none">${t.expired}</div>
+              <div class="notice on-map" style="display:none"></div>
             </div>
             <div class="chips"></div>
             <div class="comment" style="display:none"></div>
@@ -698,7 +699,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
           <div class="head bare">
             <span class="dot"></span>
             <span class="label">${t[main]}</span>
-            <span class="notice" style="display:none"></span>
+            <span class="notice inline" style="display:none"></span>
             <span class="level"></span>
           </div>
           <div class="map-wrap" style="display:none">
@@ -707,10 +708,11 @@ class MeteoFranceVigilanceCard extends HTMLElement {
             <div class="overlay">
               <span class="dot"></span>
               <span class="label">${t[main]}</span>
-              <span class="notice" style="display:none"></span>
+              <span class="notice inline" style="display:none"></span>
               <span class="level"></span>
             </div>
             <div class="stale" style="display:none">${t.expired}</div>
+            <div class="notice on-map" style="display:none"></div>
           </div>
           <div class="chips"></div>
           <div class="comment" style="display:none"></div>
@@ -722,7 +724,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
             <div class="head">
               <span class="dot"></span>
               <span class="label">${t[period]}</span>
-              <span class="notice" style="display:none"></span>
+              <span class="notice inline" style="display:none"></span>
               <span class="level"></span>
               <span class="icon-row"></span>
             </div>
@@ -742,7 +744,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
             <div class="head">
               <span class="dot"></span>
               <span class="label"></span>
-              <span class="notice" style="display:none"></span>
+              <span class="notice inline" style="display:none"></span>
               <span class="level"></span>
               <span class="icon-row"></span>
             </div>
@@ -864,10 +866,21 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     // qui ne connaît pas l'échelle antillaise, « Confinez-vous » si.
     const consigne =
       NATIVE_NOTICE[isFrench(this._hass) ? "fr" : "en"][attrs.color_native];
+    // Sur l'image quand il y en a une, dans la ligne sinon : deux badges qui
+    // disent la même sorte de chose ne doivent pas s'afficher à deux endroits.
+    //
+    // La décision se prend sur la configuration, non sur ce que le bloc
+    // affiche déjà : cette méthode passe avant celle qui pose l'image, et
+    // interroger le style ne dirait que l'état du rendu précédent.
+    const surImage =
+      Boolean(parts.mapWrap) &&
+      this._config.show_map &&
+      !["compact", "chronologie"].includes(this._config.layout);
+    const fond = attrs.color_hex || "#e01f1f";
     for (const node of parts.node.querySelectorAll(".notice")) {
+      const sien = node.classList.contains("on-map") ? surImage : !surImage;
       node.textContent = consigne || "";
-      node.style.display = consigne ? "" : "none";
-      const fond = attrs.color_hex || "#e01f1f";
+      node.style.display = consigne && sien ? "" : "none";
       node.style.background = fond;
       node.style.color = readableInk(fond);
     }
@@ -1310,14 +1323,22 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       /* La silhouette d'un territoire d'outre-mer, dessinée faute de
          vignette officielle. Même encombrement qu'une image, pour que les
          deux dispositions se comportent pareil. */
+      /* La silhouette d'un territoire n'a pas à occuper un carré : la
+         Guadeloupe et les îles du Nord y flottent, alors que la Guyane le
+         remplit. Une hauteur fixe les met toutes à la même échelle
+         apparente, et laisse la carte garder la hauteur de ses voisines. */
+      .map-wrap:has(svg.shape) {
+        aspect-ratio: auto;
+        height: var(--mfv-shape-height, 190px);
+        flex: 0 0 auto;
+      }
       svg.shape {
         width: 100%; height: 100%; display: block;
-        /* La vignette officielle porte une large marge blanche autour de
-           l'Hexagone : la silhouette dessinée en garde autant, pour que les
-           deux se ressemblent dans une même vue. */
-        padding: 12%;
+        padding: 4px;
         box-sizing: border-box;
       }
+      /* En focus, la silhouette prend la place que la vignette occuperait. */
+      .layout-focus .map-wrap:has(svg.shape) { height: var(--mfv-shape-height, 280px); }
       img.map {
         width: 100%; height: 100%; display: block;
         border-radius: var(--ha-card-border-radius, 12px);
@@ -1381,14 +1402,31 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       /* La consigne d'un niveau exceptionnel, à côté du jour : elle doit se
          voir sans écraser le reste, et vaut dans toutes les dispositions —
          y compris la compacte, qui n'a pas de vignette où poser un badge. */
-      .notice {
-        padding: 1px 8px; border-radius: 10px;
-        font-size: 0.72em; font-weight: 600; letter-spacing: 0.01em;
-        white-space: nowrap;
+      /* La consigne et le « bulletin périmé » disent la même sorte de chose —
+         une mise en garde qui prime sur le reste — et se ressemblent donc :
+         même taille, même arrondi, même épaisseur. Seules la place et la
+         couleur les distinguent. */
+      .notice, .stale {
+        /* Les mêmes proportions que les puces de phénomènes, qui se lisent
+           juste en dessous : même hauteur de texte, même arrondi, même
+           épaisseur. Une bordure transparente tient la place de celle des
+           puces, pour que les hauteurs coïncident au pixel près. */
+        display: inline-flex; align-items: center;
+        padding: 3px 10px; border-radius: 16px;
+        border: 1px solid transparent;
+        font-size: 0.8em; line-height: 1.4; font-weight: 600;
+        letter-spacing: 0.01em; white-space: nowrap;
       }
-      /* La consigne suit le nom du jour, qu'elle qualifie ; le niveau garde
-         sa place à droite de la ligne. */
-      .notice { margin-right: auto; }
+      /* Posée sur l'image, la consigne se lit en bas à gauche — le badge
+         « périmé » occupe le haut, et les deux ne se rencontrent jamais. */
+      .notice.on-map {
+        position: absolute; bottom: 8px; left: 8px;
+        z-index: 2;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+      }
+      /* Sans image, elle reprend sa place dans la ligne, après le nom
+         qu'elle qualifie. */
+      .notice.inline { margin-right: auto; }
 
       /* En compact, la ligne porte le nom du domaine, qui peut être long —
          « Saint-Martin et Saint-Barthélemy » tient mal à côté d'une consigne
@@ -1406,10 +1444,11 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       .compact .notice, .compact .level, .compact .icon-row { flex: 0 0 auto; }
 
       .stale {
-        position: absolute; top: 6px; left: 6px;
-        padding: 2px 8px; border-radius: 12px;
-        font-size: 0.75em; color: #fff;
+        position: absolute; top: 8px; left: 8px;
+        z-index: 2;
+        color: #fff;
         background: var(--error-color, #e01f1f);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
       }
       .chips { display: flex; flex-wrap: wrap; gap: 6px; }
       .chip {
