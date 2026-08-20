@@ -113,6 +113,24 @@ hors le renommage `camera.` → `image.`.
   annoncer clairement dans les notes de version, avec un rappel dans le
   README pour les tableaux de bord qui les référencent en dur.
 
+## Le format des vignettes
+
+Retour du forum (WarC0zes) : la fiche qui s'ouvre au clic sur une vignette est
+beaucoup plus haute que celle d'une caméra ordinaire. La cause n'est pas le
+type d'entité mais le **rapport de l'image** : Home Assistant affiche la fiche
+à la largeur du dialogue et la hauteur suit le rapport. Une caméra de
+surveillance est en 16:9 — large et plate ; notre vignette est carrée, en
+500 × 500, donc près de deux fois plus haute à largeur égale.
+
+Deux pistes à essayer en v2, la première étant la plus simple :
+
+* Météo France publie aussi une vignette **1000 × 500** portant les deux
+  échéances côte à côte : un rapport 2:1, exactement celui qui donne une fiche
+  compacte. Reste à vérifier ce qu'elle contient et si elle se prête à un
+  affichage par échéance.
+* Sinon, rogner la vignette carrée, qui porte une marge blanche large autour
+  de l'Hexagone.
+
 ## Ordre de marche
 
 1. Trancher la question de l'accès aux données (ci-dessus).
