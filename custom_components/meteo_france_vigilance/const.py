@@ -46,9 +46,16 @@ SERVICE_REFRESH: Final = "refresh"
 # en réparation plutôt que de passer inaperçu — voir _check_api_version.
 SUPPORTED_VIGILANCE_VERSION: Final = "V6"
 
+# Vigilance outre-mer : l'interface du site vigilance.meteofrance.fr, faute
+# d'API publiée pour ces territoires. Le jeton est celui que le site publie
+# dans ses pages — il n'engage personne et peut être renouvelé sans préavis.
+API_OM_BASE: Final = "https://webservice.meteofrance.com"
+API_OM_TOKEN: Final = "__Wj7dVSTjV9YGu1guveLyDq0g7S7TfTjaHBTPTpO0kj8__"
+
 # ── Configuration ─────────────────────────────────────────────────────────────
 CONF_API_KEY: Final = "api_key"
 CONF_DEPARTMENTS: Final = "departments"
+CONF_BASINS: Final = "basins"
 CONF_SCAN_INTERVAL: Final = "scan_interval"
 CONF_MAPS: Final = "maps"
 
