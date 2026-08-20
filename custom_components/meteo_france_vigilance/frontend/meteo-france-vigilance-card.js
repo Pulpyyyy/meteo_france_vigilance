@@ -144,6 +144,24 @@ const OM_SHAPES = {
     "M18.2 39.7L18.3 40.4L19.7 41.1L20 42.1L20.5 41.7L22.1 41.5L23.5 41.9L23.7 43.6L25.1 42.6L26.3 44L27 44.1L28.2 43.2L29.6 43.5L30 44L29.7 44.5L30 45.5L30.4 44.4L30 43L31.1 41.8L32.7 41.6L34.4 42L35.5 42.8L35.2 43.3L34.6 43.2L35.2 43.4L35.1 43.9L34.4 43.6L34.8 43.9L34.8 44.8L34.3 45L35.1 45.7L34.7 47.8L35.2 48L36.4 47.8L37.5 46.4L37.5 45.6L38.7 45.5L39 44.8L39.6 44.5L39.8 43.6L40.9 43.3L40.1 41.8L42.2 40.3L42 39.7L42.7 39.3L42.5 39L41.7 38.9L41.6 37.7L42.4 36.4L43.3 36.1L43.4 35.3L44.1 34.7L43.6 32.9L44.7 31.7L43.6 32L42.8 31L43.4 30.6L44.1 30.7L44.4 31.2L45.1 31.1L45 31.7L45.4 31.8L45.8 31.2L44.7 29L45.3 28.3L45.3 27.6L44.5 27.2L44 27.4L42.7 25.3L43.7 23.6L44.3 23.6L44.5 24.1L45.8 21.9L45 22.1L43.1 20.8L42 19.4L41.5 18.1L42 15.6L41.1 14.8L41.1 14.2L41.9 13.3L43 13.8L43.6 13.1L43.5 12.5L42.8 12.3L42.5 11.6L42.4 9.5L42.9 8.7L42.2 8.8L40.8 8L39.4 8.2L39 8.6L38.5 8.3L36.8 8.3L36.2 9.9L37.5 11.8L37.5 12.3L36.9 12.4L37.1 11.5L36.7 10.8L36.5 11.2L35.7 11.5L35 10.6L34.5 10.8L32.6 9.9L31.9 13.4L32.1 13.9L30.7 15.7L29.9 16.2L28.2 16.3L27.7 16.2L26.9 15.1L26.2 15.6L26.2 16.2L25.1 16.4L25.6 17.1L25.4 18L24.9 18.5L24.1 18.5L23.1 20.1L21.8 20.8L22.1 21.5L21.6 21.8L22.1 21.7L23.3 23.3L22.2 25.2L20.5 26L20.4 26.5L20.7 25.8L21.4 25.9L21.3 26.7L20.5 26.6L21.1 26.8L21.5 26.4L21.5 27L20.5 28L18.4 28.8L19.4 29.5L19.5 29L19.7 29.5L20.4 28.6L21.5 28L20.2 32.7L19.5 32.6L18.9 32L18.6 32.8L18.9 33.3L20.2 33.4L20.9 34.1L20.3 35.3L20.7 36.4L21.9 37.6L22.2 39.7L21.5 39.4L20.9 38.4L20.3 38.6L19.2 37.7L18.6 38.2L19.2 38.3L19.3 39.1L18.2 39.7ZM52 60.4L52.2 60.9L52.6 60.7L53.8 61.3L54.1 63L55.6 63.7L55.8 64.4L56.2 64.4L58.3 66.9L60.2 66.7L60.6 67L60.7 67.9L62 68.6L62.3 69.3L62 69.7L61.7 69.5L61.8 69.8L64 72.9L63.3 73.3L62.7 71.7L62 71.4L61.4 72L61.8 73L63.2 74.4L64.5 74.7L64.5 75.8L65.5 77.1L66.7 77.8L67.3 79.3L68 79.7L67.9 80.6L69 81.5L69.7 81.5L70.5 79.1L70.8 79.2L71.1 78.5L72.1 78.2L72.8 78.7L73 79.6L73.8 80.6L74.3 78.9L75.5 79.4L75.7 77.6L77.6 76.7L78.4 76.9L78.7 77.9L79.6 77.7L79.6 78.7L80.6 79.8L82.2 78.7L82.1 76.6L82.5 76.3L82.4 75.4L83 74.9L86.4 73.5L87.1 72.6L88.6 72.1L89.2 72.2L89.7 73.4L90.2 73.7L90.8 72.9L90.5 70.2L91.3 69.7L91.8 68.6L91.5 67.6L92 66.7L91.8 65.6L91.5 65.4L90.4 66.9L89.6 67.1L89.6 68L89.2 68.1L88.2 67.5L88.7 66.1L87.9 64.6L87.1 65.1L87.2 66L86.4 66.7L85.1 65.6L85.4 64.4L85.9 64.3L85.6 63.9L83.9 64.7L83.6 65.7L82.7 65.7L82.2 65L83.6 63.5L82.9 63L82.9 62L82.7 62.8L80.9 63.2L80.3 62.5L80.3 61.5L79.9 61.1L78.7 62.2L78.7 64L76.9 66.8L75.6 67.4L74.3 67.4L73.8 66.8L74.1 66.1L73.3 66.1L71 67.9L71.5 68.7L71.3 69.1L70.2 69.5L70 69.1L69.4 69.3L67.9 68.4L67.5 67.4L68.2 66.6L68 65.7L66.5 65.6L65.7 64L66.4 63.4L66.1 62.5L65.7 62.3L64.6 62.6L64.1 62.3L63.3 59.9L61.4 60.3L61.3 61L60 61.4L58.9 61.2L57.9 59.9L57.8 60.7L57 61L56.2 60L56.1 59L55.1 58.5L55.6 57.6L55 56.8L55.2 56.6L54.8 56.5L53.4 56.8L52.8 57.4L54.3 57.8L54.8 58.4L54.4 60L52 60.4Z",
 };
 
+/* Les consignes des niveaux que la métropole ne connaît pas. Ce sont celles
+ * du dispositif de Météo France outre-mer : le violet ordonne le confinement,
+ * le gris annonce que le danger s'éloigne sans avoir disparu. */
+const NATIVE_NOTICE = {
+  fr: {
+    purple: "Confinez-vous",
+    grey: "Restez prudent",
+    blue_grey: "Phase de sauvegarde",
+    blue: "Pas de vigilance particulière",
+  },
+  en: {
+    purple: "Stay indoors",
+    grey: "Remain cautious",
+    blue_grey: "Recovery phase",
+    blue: "No particular vigilance",
+  },
+};
+
 const WORDS = {
   fr: {
     today: "Aujourd'hui",
@@ -259,13 +277,43 @@ const fireEvent = (node, type, detail = {}) => {
 
 const moreInfo = (node, entityId) => fireEvent(node, "hass-more-info", { entityId });
 
+/* L'encre qui se lira le mieux sur un fond donné.
+ *
+ * Le seuil d'accessibilité demande un contraste de 4,5 contre 1 pour du
+ * texte : le blanc ne l'atteint pas sur le gris d'une phase de sauvegarde
+ * (2,85) quand l'encre sombre y monte à 5,48. Sur le violet d'un confinement,
+ * c'est l'inverse — 7,29 pour le blanc. On mesure donc plutôt que de
+ * supposer, et la règle vaudra aussi pour les couleurs à venir. */
+const readableInk = (background) => {
+  const hex = String(background || "").replace("#", "");
+  if (hex.length !== 6) return "#fff";
+  const channel = (i) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  // Luminance relative, telle que la définit la norme d'accessibilité.
+  const l = 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+  const withWhite = 1.05 / (l + 0.05);
+  const withInk = (l + 0.05) / 0.05;
+  return withWhite >= withInk ? "#fff" : "#12161d";
+};
+
 const escapeHtml = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
   );
 
-const levelName = (state, hass) => {
+/* Le nom du niveau tel qu'il sera lu.
+ *
+ * Outre-mer, l'échelle va au-delà du rouge : le violet dit « confinez-vous »
+ * et le gris « restez prudent ». Le composant ramène ces niveaux à `red` pour
+ * que les automations restent portables, mais l'écran, lui, doit dire le
+ * niveau réel — sans quoi une carte grise s'annoncerait « Rouge ».
+ *
+ * `color_name` vient du composant, déjà dans la langue de Météo France. */
+const levelName = (state, hass, attrs) => {
+  if (attrs?.color_native && attrs.color_name) return attrs.color_name;
   const level = LEVELS[state];
   return level ? level[isFrench(hass) ? "fr" : "en"] : "—";
 };
@@ -610,12 +658,13 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     this._built = true;
   }
 
-  /** L'en-tête d'une période : pastille, nom, niveau. */
+  /** L'en-tête d'une période : pastille, nom, consigne, niveau. */
   _headHTML(label) {
     return `
       <div class="head">
         <span class="dot"></span>
         <span class="label">${escapeHtml(label)}</span>
+        <span class="notice" style="display:none"></span>
         <span class="level"></span>
       </div>`;
   }
@@ -649,6 +698,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
           <div class="head bare">
             <span class="dot"></span>
             <span class="label">${t[main]}</span>
+            <span class="notice" style="display:none"></span>
             <span class="level"></span>
           </div>
           <div class="map-wrap" style="display:none">
@@ -657,6 +707,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
             <div class="overlay">
               <span class="dot"></span>
               <span class="label">${t[main]}</span>
+              <span class="notice" style="display:none"></span>
               <span class="level"></span>
             </div>
             <div class="stale" style="display:none">${t.expired}</div>
@@ -671,6 +722,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
             <div class="head">
               <span class="dot"></span>
               <span class="label">${t[period]}</span>
+              <span class="notice" style="display:none"></span>
               <span class="level"></span>
               <span class="icon-row"></span>
             </div>
@@ -690,6 +742,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
             <div class="head">
               <span class="dot"></span>
               <span class="label"></span>
+              <span class="notice" style="display:none"></span>
               <span class="level"></span>
               <span class="icon-row"></span>
             </div>
@@ -787,20 +840,36 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     const level = LEVELS[state?.state] || null;
 
     // La couleur du bloc alimente les quatre thèmes : la pastille, la tranche
-    // du bandeau, l'aplat du plein, l'anneau du sobre.
-    parts.node.style.setProperty(
-      "--level-color",
-      level ? level.color : "var(--disabled-text-color)"
-    );
+    // du bandeau, l'aplat du plein, l'anneau du sobre. Outre-mer, c'est la
+    // teinte du niveau réel — le violet d'un confinement, le gris d'une phase
+    // de sauvegarde — que le composant publie dans `color_hex`.
+    const teinte = attrs.color_native && attrs.color_hex
+      ? attrs.color_hex
+      : level
+        ? level.color
+        : "var(--disabled-text-color)";
+    parts.node.style.setProperty("--level-color", teinte);
     parts.node.classList.toggle("alerted", alerted(state?.state));
 
     // Toutes les pastilles du bloc : le focus en a deux — celle du bandeau et
     // celle posée sur la vignette — et une seule colorée serait un défaut vu.
     for (const dot of parts.node.querySelectorAll(".dot")) {
-      dot.style.background = level ? level.color : "var(--disabled-text-color)";
+      dot.style.background = teinte;
     }
     for (const node of parts.node.querySelectorAll(".level")) {
-      node.textContent = levelName(state?.state, this._hass);
+      node.textContent = levelName(state?.state, this._hass, attrs);
+    }
+
+    // La consigne d'un niveau exceptionnel : dire « Violet » n'apprend rien à
+    // qui ne connaît pas l'échelle antillaise, « Confinez-vous » si.
+    const consigne =
+      NATIVE_NOTICE[isFrench(this._hass) ? "fr" : "en"][attrs.color_native];
+    for (const node of parts.node.querySelectorAll(".notice")) {
+      node.textContent = consigne || "";
+      node.style.display = consigne ? "" : "none";
+      const fond = attrs.color_hex || "#e01f1f";
+      node.style.background = fond;
+      node.style.color = readableInk(fond);
     }
     if (parts.stale) parts.stale.style.display = attrs.expired ? "" : "none";
     this._bindActions(parts.node, sensorId);
@@ -1308,6 +1377,19 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       /* Au-dessus du calque d'encre et du masque : ils portent leur propre
          couleur et n'ont rien à voir avec la vignette. */
       .stale, .overlay { z-index: 2; }
+
+      /* La consigne d'un niveau exceptionnel, à côté du jour : elle doit se
+         voir sans écraser le reste, et vaut dans toutes les dispositions —
+         y compris la compacte, qui n'a pas de vignette où poser un badge. */
+      .notice {
+        padding: 1px 8px; border-radius: 10px;
+        font-size: 0.72em; font-weight: 600; letter-spacing: 0.01em;
+        white-space: nowrap;
+      }
+      /* Le niveau perd sa marge automatique quand la consigne la prend : sans
+         cela, les deux se disputeraient la droite de la ligne. */
+      .head:has(.notice:not([style*="none"])) .level { margin-left: 4px; }
+      .head:has(.notice:not([style*="none"])) .notice { margin-left: auto; }
 
       .stale {
         position: absolute; top: 6px; left: 6px;
