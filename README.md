@@ -9,8 +9,8 @@
 [![Version](https://img.shields.io/github/manifest-json/v/Pulpyyyy/meteo_france_vigilance?filename=custom_components%2Fmeteo_france_vigilance%2Fmanifest.json&label=version)](https://github.com/Pulpyyyy/meteo_france_vigilance/blob/main/CHANGELOG.md)
 [![License: MIT](https://img.shields.io/github/license/Pulpyyyy/meteo_france_vigilance)](LICENSE)
 
-La carte de vigilance de Météo-France dans Home Assistant (API publique
-**DPVigilance v1**), avec sa carte Lovelace livrée dans le composant.
+La carte de vigilance de Météo-France dans Home Assistant — **métropole et
+outre-mer** — avec sa carte Lovelace livrée dans le composant.
 
 Remplace le montage à base de `command_line` + `jq` + `local_file` +
 automatisation de rafraîchissement partagé sur le forum HACF : une entrée de
@@ -30,6 +30,10 @@ configuration, deux capteurs par département, deux caméras, une composition de
   couleur de vigilance (`green`, `yellow`, `orange`, `red`), traduite par Home
   Assistant ; les phénomènes, leurs créneaux horaires et le commentaire
   national sont en attributs.
+- **L'outre-mer** : Guadeloupe, Martinique, Guyane, La Réunion, Mayotte,
+  Saint-Martin et Saint-Barthélemy — avec l'alerte cyclonique et les niveaux
+  violet et gris que la métropole ne connaît pas. Aucune clé d'API n'est
+  nécessaire pour ces territoires.
 - **Deux cartes de France** pour les données nationales J et J+1, publiées en
   entités `image` et gardées en mémoire — rien n'est écrit dans `www/`.
 - **Carte Lovelace embarquée** : servie et enregistrée automatiquement par le
@@ -157,6 +161,63 @@ Et sur l'appareil de l'intégration, les deux vignettes nationales :
 > en temps, et sa fiche est plus légère que celle d'une caméra. Un tableau
 > de bord qui nommait `camera.vigilance_…` en dur est à corriger ; la carte
 > livrée avec l'intégration, elle, retrouve les deux formes toute seule.
+
+---
+
+## 🌴 Outre-mer
+
+Six territoires suivis, à côté des départements métropolitains ou seuls :
+**Guadeloupe, Martinique, Guyane, La Réunion, Mayotte, Saint-Martin et
+Saint-Barthélemy**. Ils se choisissent dans la même liste que les
+départements, à la configuration.
+
+| Thème clair | Thème sombre |
+|:---:|:---:|
+| <img src="images/outre-mer-light.png" alt="Trois territoires d'outre-mer, thème clair" width="380"> | <img src="images/outre-mer-dark.png" alt="Trois territoires d'outre-mer, thème sombre" width="380"> |
+
+**Aucune clé d'API n'est nécessaire** pour l'outre-mer : ces données ne
+viennent pas de DPVigilance, que Météo-France ne publie que pour la métropole,
+mais du service qui alimente son site de vigilance. Cet accès n'est pas
+contractuel — il peut changer sans préavis, et l'intégration le signale à la
+configuration plutôt que de le passer sous silence. La clé n'est donc
+demandée que si vous suivez des départements métropolitains.
+
+### Ce que l'outre-mer a de particulier
+
+* **L'alerte cyclonique**, un phénomène que la métropole ignore, avec sa
+  propre chronologie.
+* **Un capteur de phase cyclonique** par territoire — `Aucune`, `Alerte
+  orange`, `Alerte rouge`, `Alerte violette`, `Phase de sauvegarde`. Il est
+  distinct de la couleur : dans l'océan Indien, une vigilance orange peut être
+  doublée d'une menace cyclonique, et les deux méritent chacune leur
+  déclencheur. Pas de capteur en Guyane, que Météo-France n'inclut pas dans le
+  dispositif.
+* **Le violet et le gris.** L'échelle des Antilles va au-delà du rouge : le
+  violet dit « confinez-vous », le gris « restez prudent » après le passage du
+  phénomène. L'état du capteur reste `red` — pour qu'une automatisation écrite
+  pour la Gironde vaille aussi pour la Guadeloupe — mais l'attribut
+  `color_native` porte le niveau réel, et la carte le peint de sa couleur.
+* **La carte dessine les territoires**, Météo-France ne publiant de vignette
+  que pour trois d'entre eux.
+
+| Thème clair | Thème sombre |
+|:---:|:---:|
+| <img src="images/outre-mer-chrono-light.png" alt="Chronologie d'une alerte cyclonique, thème clair" width="380"> | <img src="images/outre-mer-chrono-dark.png" alt="Chronologie d'une alerte cyclonique, thème sombre" width="380"> |
+
+### Attributs propres aux territoires
+
+| Attribut | Contenu |
+|---|---|
+| `color_native` | Le niveau réel quand il sort de l'échelle métropolitaine : `purple`, `grey`, `blue`… |
+| `cyclone_phase` | La phase en cours, reprise par le capteur du même nom |
+| `basin`, `domain` | L'identifiant du territoire chez Météo-France (`VIGI971`…) |
+| `scale` | L'échelle de couleurs du bassin : `antilles` ou `indian_ocean` |
+
+`department` et `department_name` restent renseignés, avec l'identifiant et le
+nom du territoire : les modèles Jinja écrits pour la métropole continuent de
+fonctionner.
+
+---
 
 ### Action `meteo_france_vigilance.refresh`
 

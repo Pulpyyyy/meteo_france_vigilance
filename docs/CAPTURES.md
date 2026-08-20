@@ -22,9 +22,20 @@ chrome --headless=new --disable-gpu --allow-file-access-from-files \
 | `layout-focus` | disposition focus | 470,680 |
 | `layout-compact` | disposition compact | 470,200 |
 | `layout-chrono` | disposition chronologie | 470,600 |
+| `outre-mer` | trois territoires : alerte cyclonique, violet, calme | 720,880 |
+| `outre-mer-chrono` | chronologie d'une alerte cyclonique | 470,330 |
 
 Chaque page existe en `mode=light` et `mode=dark`. Les fichiers vont dans
 `images/` sous le nom `<page>-<mode>.png`.
+
+Chrome veut des chemins **absolus** : une sortie relative échoue sans que la
+commande le dise clairement, et l'adresse du harnais doit être une URL
+`file:///` complète, faute de quoi elle est prise pour un nom de domaine.
+
+Les pages d'outre-mer n'ont pas de vignette : la carte y dessine la silhouette
+du territoire, à partir des contours embarqués dans le composant. Elles
+servent donc aussi à vérifier ce que la métropole ne montre jamais — le
+violet, le gris, et la chronologie d'une alerte cyclonique.
 
 Les vignettes factices utilisent les **contours réels** des départements
 ([france-geojson](https://github.com/gregoiredavid/france-geojson),

@@ -1243,7 +1243,10 @@ class MeteoFranceVigilanceCard extends HTMLElement {
          deux dispositions se comportent pareil. */
       svg.shape {
         width: 100%; height: 100%; display: block;
-        padding: 6px;
+        /* La vignette officielle porte une large marge blanche autour de
+           l'Hexagone : la silhouette dessinée en garde autant, pour que les
+           deux se ressemblent dans une même vue. */
+        padding: 12%;
         box-sizing: border-box;
       }
       img.map {
