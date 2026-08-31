@@ -34,6 +34,10 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# Les réponses du service pèsent quelques kilo-octets : au-delà de cette
+# borne — très large —, ce n'est plus une réponse, c'est un problème.
+_MAX_BYTES = 2 * 1024 * 1024
+
 
 class VigilanceOmApi:
     """Client de la vigilance outre-mer, sans état."""
@@ -63,6 +67,10 @@ class VigilanceOmApi:
                 ) as response:
                     response.raise_for_status()
                     raw = await response.read()
+                    if len(raw) > _MAX_BYTES:
+                        raise VigilanceApiError(
+                            f"Réponse démesurée pour {domain} : {len(raw)} octets"
+                        )
                     # Décodé hors de la boucle d'événements, comme le bulletin
                     # métropolitain : le service répond en « text/plain » et
                     # vérifier le type ne prouverait rien.

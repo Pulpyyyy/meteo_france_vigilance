@@ -147,6 +147,27 @@ const OM_SHAPES = {
 /* Les consignes des niveaux que la métropole ne connaît pas. Ce sont celles
  * du dispositif de Météo France outre-mer : le violet ordonne le confinement,
  * le gris annonce que le danger s'éloigne sans avoir disparu. */
+/* Les noms des niveaux que la métropole ne connaît pas : le composant les
+ * publie en français, l'écran suit la langue de Home Assistant. */
+const NATIVE_NAMES = {
+  fr: {
+    purple: "Violet",
+    grey: "Gris",
+    blue: "Bleu",
+    blue_grey: "Bleu-gris",
+    orange_hatched: "Orange cyclonique",
+    red_hatched: "Rouge cyclonique",
+  },
+  en: {
+    purple: "Purple",
+    grey: "Grey",
+    blue: "Blue",
+    blue_grey: "Blue-grey",
+    orange_hatched: "Cyclonic orange",
+    red_hatched: "Cyclonic red",
+  },
+};
+
 const NATIVE_NOTICE = {
   fr: {
     purple: "Confinez-vous",
@@ -313,10 +334,18 @@ const escapeHtml = (value) =>
  *
  * `color_name` vient du composant, déjà dans la langue de Météo France. */
 const levelName = (state, hass, attrs) => {
-  if (attrs?.color_native && attrs.color_name) return attrs.color_name;
+  if (attrs?.color_native) {
+    const table = NATIVE_NAMES[isFrench(hass) ? "fr" : "en"];
+    return table[attrs.color_native] || attrs.color_name || "—";
+  }
   const level = LEVELS[state];
   return level ? level[isFrench(hass) ? "fr" : "en"] : "—";
 };
+
+/* Une teinte publiée par le composant, et rien d'autre : ce qui atteint un
+ * style se refuse en bloc si ce n'est pas une couleur hexadécimale. */
+const safeHex = (value) =>
+  /^#[0-9a-fA-F]{6}$/.test(String(value || "")) ? value : null;
 
 const hour = (value, hass) =>
   value
@@ -849,11 +878,8 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     // du bandeau, l'aplat du plein, l'anneau du sobre. Outre-mer, c'est la
     // teinte du niveau réel — le violet d'un confinement, le gris d'une phase
     // de sauvegarde — que le composant publie dans `color_hex`.
-    const teinte = attrs.color_native && attrs.color_hex
-      ? attrs.color_hex
-      : level
-        ? level.color
-        : "var(--disabled-text-color)";
+    const teinte = (attrs.color_native && safeHex(attrs.color_hex)) ||
+      (level ? level.color : "var(--disabled-text-color)");
     parts.node.style.setProperty("--level-color", teinte);
     parts.node.classList.toggle("alerted", alerted(state?.state));
 
@@ -880,7 +906,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       Boolean(parts.mapWrap) &&
       this._config.show_map &&
       !["compact", "chronologie"].includes(this._config.layout);
-    const fond = attrs.color_hex || "#e01f1f";
+    const fond = safeHex(attrs.color_hex) || "#e01f1f";
     for (const node of parts.node.querySelectorAll(".notice")) {
       const sien = node.classList.contains("on-map") ? surImage : !surImage;
       node.textContent = consigne || "";
@@ -1085,8 +1111,10 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     }
     parts.mapWrap.style.display = "";
 
-    const colour = attrs.color_hex || "var(--disabled-text-color)";
-    const signature = `${shape.length}|${colour}`;
+    const colour = safeHex(attrs.color_hex) || "var(--disabled-text-color)";
+    // Le domaine, pas la longueur du tracé : deux territoires pourraient un
+    // jour partager la même, et la clé doit dire ce qu'elle identifie.
+    const signature = `${attrs.domain}|${colour}`;
     if (parts.shapeSignature !== signature) {
       parts.shapeSignature = signature;
       parts.map.style.display = "none";

@@ -28,6 +28,9 @@ from .const import COMBINED_MAP, DOMAIN, PERIODS
 from .coordinator import VigilanceCoordinator
 from .entity import VigilanceEntity, hub_device_info
 
+# Les entités lisent le coordinateur : aucune limite nécessaire.
+PARALLEL_UPDATES = 0
+
 
 async def async_setup_entry(
     hass: HomeAssistant,

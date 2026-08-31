@@ -35,6 +35,10 @@ from .coordinator import VigilanceCoordinator
 from .coordinator_om import OM_PERIOD, VigilanceOmCoordinator
 from .entity import VigilanceEntity, department_device_info
 
+# Les entités lisent le coordinateur, elles n'interrogent rien elles-mêmes :
+# aucune raison de limiter leurs mises à jour.
+PARALLEL_UPDATES = 0
+
 SENSORS: tuple[SensorEntityDescription, ...] = tuple(
     SensorEntityDescription(
         key=period,

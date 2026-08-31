@@ -153,9 +153,11 @@ async def _async_validate(
     if not departments and not basins:
         return {"base": "nothing_selected"}, []
 
-    # Sans département, il n'y a rien à demander à DPVigilance : suivre la
-    # Réunion seule ne réclame aucune clé d'API.
-    if not departments:
+    # Sans département ni clé, il n'y a rien à demander à DPVigilance :
+    # suivre la Réunion seule ne réclame aucune clé. Une clé fournie est en
+    # revanche toujours essayée — une faute de frappe doit se signaler à la
+    # saisie, pas le jour où un département s'ajoutera.
+    if not departments and not api_key:
         return {}, []
 
     if not api_key:
@@ -171,6 +173,11 @@ async def _async_validate(
     except VigilanceApiError as err:
         _LOGGER.debug("Vérification de la clé impossible : %s", err)
         return {"base": "cannot_connect"}, []
+
+    # Clé sans département : elle vient d'être essayée, c'est tout ce qu'on
+    # lui demandait.
+    if not departments:
+        return {}, []
 
     known = {
         str(domain.get("domain_id"))
