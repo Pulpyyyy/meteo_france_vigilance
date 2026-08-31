@@ -1,5 +1,63 @@
 # Changelog
 
+## 2.0.0 — 2026-08-31
+
+**La vigilance outre-mer arrive.** Version majeure : un changement demande
+votre attention à la mise à jour.
+
+### À savoir avant de mettre à jour
+
+- **Les vignettes changent de type d'entité** : `camera.vigilance_…` devient
+  `image.vigilance_…` — le type que Home Assistant destine aux images qui se
+  rafraîchissent de temps en temps. La carte fournie s'adapte toute seule ;
+  seuls les tableaux de bord qui nommaient la caméra en dur sont à corriger.
+- Rien d'autre ne bouge : capteurs, historiques et automatisations restent
+  identiques.
+
+### Nouveautés
+
+- **Six territoires d'outre-mer** : Guadeloupe, Martinique, Guyane,
+  La Réunion, Mayotte, Saint-Martin et Saint-Barthélemy — à choisir à la
+  configuration, avec ou sans départements métropolitains. **Aucune clé d'API
+  n'est nécessaire pour eux**, et elle n'est plus demandée si vous ne suivez
+  que l'outre-mer.
+- **L'alerte cyclonique**, avec sa chronologie et un capteur de phase dédié
+  (aucune, vigilance jaune, alertes orange, rouge, violette, phase de
+  sauvegarde) pour vos automatisations.
+- **Les niveaux violet et gris** des Antilles : l'état du capteur reste
+  `red` — une automatisation écrite pour la Gironde vaut pour la
+  Guadeloupe — mais la carte affiche le niveau réel, sa couleur, et la
+  consigne officielle en badge : « Confinez-vous », « Restez prudent ».
+- **La carte dessine les territoires** : chaque île est peinte de sa couleur
+  de vigilance, pour les six territoires — Météo France ne publie de vignette
+  que pour trois d'entre eux.
+- **Une troisième carte de France, « Carte deux jours »** : les deux
+  échéances côte à côte dans une image large, dont la fiche se consulte sans
+  faire défiler.
+- **Diagnostics téléchargeables** depuis l'entrée (clé d'API masquée) — à
+  joindre aux signalements de problème.
+
+### Améliorations
+
+- **La carte tient dans une colonne étroite** — panneau latéral, téléphone en
+  portrait : les en-têtes se replient, les noms longs s'abrègent, plus rien
+  ne déborde ni n'est coupé en silence. Quand la hauteur manque, le contenu
+  défile au lieu de disparaître.
+- La place demandée aux tableaux de bord en sections suit la disposition :
+  une carte compacte peut enfin être réduite à un quart de vue.
+- Une clé d'API saisie est toujours vérifiée immédiatement auprès de Météo
+  France, même quand aucun département ne l'exige encore.
+- Les cibles tactiles s'élargissent sur écran tactile, sans changer le dessin.
+
+### Le mot honnête sur l'outre-mer
+
+Les données des territoires viennent du service qui alimente le site de
+vigilance de Météo France — pas d'une API contractuelle : Météo France n'en
+publie pas pour l'outre-mer. Cet accès peut changer sans préavis ; si cela
+arrivait, les territoires passeraient indisponibles et la métropole
+continuerait, les deux sources étant indépendantes.
+
+
 ## 1.1.1 — 2026-08-20
 
 ### Corrections

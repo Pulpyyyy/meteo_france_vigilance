@@ -14,7 +14,8 @@ outre-mer** — avec sa carte Lovelace livrée dans le composant.
 
 Remplace le montage à base de `command_line` + `jq` + `local_file` +
 automatisation de rafraîchissement partagé sur le forum HACF : une entrée de
-configuration, deux capteurs par département, deux caméras, une composition de cartes Lovelace.
+configuration, des capteurs par département ou territoire, les cartes en
+entités `image`, une composition de cartes Lovelace.
 
 | Thème clair | Thème sombre |
 |:---:|:---:|
@@ -24,8 +25,9 @@ configuration, deux capteurs par département, deux caméras, une composition de
 
 ## ✨ Fonctionnalités
 
-- **Configuration entièrement graphique** : clé d'API, départements, cartes
-  nationales, intervalle — rien à écrire en YAML.
+- **Configuration entièrement graphique** : départements, territoires
+  d'outre-mer, clé d'API, cartes nationales, intervalle — rien à écrire en
+  YAML.
 - **Deux capteurs par département** (aujourd'hui / demain) : l'état est la
   couleur de vigilance (`green`, `yellow`, `orange`, `red`), traduite par Home
   Assistant ; les phénomènes, leurs créneaux horaires et le commentaire
@@ -34,8 +36,9 @@ configuration, deux capteurs par département, deux caméras, une composition de
   Saint-Martin et Saint-Barthélemy — avec l'alerte cyclonique et les niveaux
   violet et gris que la métropole ne connaît pas. Aucune clé d'API n'est
   nécessaire pour ces territoires.
-- **Deux cartes de France** pour les données nationales J et J+1, publiées en
-  entités `image` et gardées en mémoire — rien n'est écrit dans `www/`.
+- **Trois cartes de France** — aujourd'hui, demain, et les deux jours côte à
+  côte — publiées en entités `image` et gardées en mémoire : rien n'est écrit
+  dans `www/`.
 - **Carte Lovelace embarquée** : servie et enregistrée automatiquement par le
   composant, aucune ressource à déclarer, aucune dépendance (ni mushroom, ni
   auto-entities, ni card-mod).
@@ -88,6 +91,9 @@ phénomène garde la sienne.
 
 ### Obtenir la clé d'API (gratuite)
 
+> Nécessaire pour les départements métropolitains uniquement : les
+> territoires d'outre-mer n'en demandent pas.
+
 1. Créer un compte sur
    [portail-api.meteofrance.fr](https://portail-api.meteofrance.fr) (icône de
    connexion en haut à droite → créer un compte), puis valider l'e-mail reçu.
@@ -106,7 +112,9 @@ phénomène garde la sienne.
 
 1. **Paramètres → Appareils et services → Ajouter une intégration →
    « Vigilance Météo France »**.
-2. Saisir la clé d'API et choisir les départements.
+2. Choisir les départements et les territoires d'outre-mer à suivre.
+3. Saisir la clé d'API — nécessaire seulement si des départements
+   métropolitains sont suivis ; l'outre-mer s'en passe.
 
 Aucune ressource Lovelace à déclarer : le composant sert la carte à
 `/meteo_france_vigilance_frontend/meteo-france-vigilance-card.js` et
@@ -121,9 +129,10 @@ change via **Reconfigurer**).
 
 | Option | Défaut | Rôle |
 |---|---|---|
-| Départements | — | Codes suivis. Les zones littorales se saisissent à la main (`3010`, `6410`…). Andorre et l'outre-mer, hors du bulletin métropole, ne sont plus proposés |
-| Cartes nationales | activé | Télécharge les deux images de la carte de France |
-| Intervalle | 30 min | De 5 à 720 min. Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps |
+| Départements | — | Codes métropolitains suivis. Les zones littorales se saisissent à la main (`3010`, `6410`…) ; Andorre, retiré du bulletin par Météo France, n'est plus proposé |
+| Territoires d'outre-mer | — | Guadeloupe, Martinique, Guyane, La Réunion, Mayotte, Saint-Martin et Saint-Barthélemy — sans clé d'API |
+| Cartes nationales | activé | Télécharge les trois images de la carte de France (aujourd'hui, demain, et les deux jours côte à côte). Métropole uniquement |
+| Intervalle | 30 min | De 5 à 720 min. Le bulletin métropolitain est réémis à 6 h et 16 h, et corrigé entre-temps |
 
 ---
 
@@ -352,7 +361,7 @@ tap_action:
   navigation_path: /lovelace/meteo
 ```
 
-> **Fiche caméra trop grande ?** Le `more-info` d'une caméra est la boîte de
+> **Fiche trop grande ?** Le `more-info` d'une vignette est la boîte de
 > dialogue standard de Home Assistant : sa taille ne se règle pas depuis la
 > carte. Pour un aperçu compact, pointez `tap_action` vers une popup
 > (browser_mod…) ou une vue dédiée — ou réduisez la vignette avec `map_width`.
