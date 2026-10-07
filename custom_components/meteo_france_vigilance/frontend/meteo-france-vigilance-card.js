@@ -1580,7 +1580,57 @@ class MeteoFranceVigilanceCard extends HTMLElement {
            est souvent posée dans une colonne étroite de tableau de bord.
            Le seuil tient compte de ce qu'une colonne doit contenir — une
            vignette, un en-tête et des puces —, non de la seule vignette. */
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+      }
+      /* Les deux jours partagent les mêmes lignes : en-tête, vignette,
+         puces, commentaire. Une alerte aujourd'hui et rien demain ne donnent
+         donc plus deux vignettes de tailles différentes — la plus courte des
+         colonnes, étirée, faisait grandir la sienne jusqu'à déborder — et ce
+         qui suit chacune commence à la même hauteur.
+
+         Un navigateur sans subgrid (iOS 15) garde la disposition d'avant :
+         chaque colonne pour elle-même. */
+      @supports (grid-template-rows: subgrid) {
+        .grid {
+          /* Pas d'espacement de ligne : il resterait entre deux lignes vides,
+             une vignette ou un commentaire masqués. Chaque bloc porte le
+             sien. */
+          row-gap: 0;
+          /* Pour savoir, plus bas, si les jours sont côte à côte ou
+             empilés. */
+          container-type: inline-size;
+          /* La ligne de la vignette prend ce que les autres laissent, jusqu'à
+             la taille d'une vignette pleine largeur et pas au-delà : sa
+             hauteur ne dépasse jamais la largeur de la colonne, et le carré
+             tient toujours. Empilés, les jours reprennent chacun le même
+             motif de quatre lignes. */
+          grid-template-rows: auto minmax(0, max-content) auto auto;
+          grid-auto-rows: auto minmax(0, max-content) auto auto;
+          align-content: start;
+        }
+        .grid > .period {
+          display: grid; grid-row: span 4; grid-template-rows: subgrid;
+          row-gap: 0;
+        }
+        /* Placés à leur ligne, et non dans l'ordre : une vignette masquée ne
+           doit pas faire remonter les puces à sa place. */
+        .grid .head { grid-row: 1; }
+        .grid .map-wrap {
+          grid-row: 2; margin-top: 8px;
+          /* La hauteur de la ligne, et la largeur qui en découle. */
+          height: calc(100% - 8px); max-height: none;
+          max-width: min(100%, var(--mfv-map-width, 100%));
+        }
+        .grid .map-wrap:has(svg.shape) {
+          max-height: min(calc(100% - 8px), var(--mfv-shape-height, 190px));
+          min-height: 0;
+        }
+        .grid .chips { grid-row: 3; margin-top: 8px; }
+        .grid .comment { grid-row: 4; margin-top: 8px; }
+        /* Empilés, les deux jours gardent l'écart qui les séparait. */
+        @container (width < 432px) {
+          .grid > .period + .period { margin-top: 12px; }
+        }
       }
 
       /* ── Disposition : focus ────────────────────────────────────────── */
@@ -1657,6 +1707,17 @@ class MeteoFranceVigilanceCard extends HTMLElement {
         background: color-mix(in srgb, var(--level-color) 13%, transparent);
         border-radius: var(--ha-card-border-radius, 12px);
         padding: 8px;
+      }
+      /* En duo côte à côte, les deux jours partagent la ligne de la
+         vignette : la colonne voisine prend le même retrait, sans quoi sa
+         vignette, plus large, imposerait sa hauteur à celle du cadre et la
+         ferait déborder. Empilés, chacun a sa ligne et garde sa largeur. */
+      @supports (grid-template-rows: subgrid) {
+        @container (width >= 432px) {
+          .theme-plein .grid:has(> .alerted) > .period:not(.alerted) {
+            padding-inline: 8px;
+          }
+        }
       }
       .theme-plein .period.alerted > .head {
         margin: -8px -8px 0;

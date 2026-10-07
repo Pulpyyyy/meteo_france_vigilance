@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.1 — 2026-10-07
+
+### Corrections
+
+- **Les deux jours s'alignent** : une alerte aujourd'hui et rien demain ne
+  donnent plus deux vignettes de tailles différentes, dont l'une pouvait
+  déborder de la carte. En-têtes, vignettes, puces et commentaires
+  commencent à la même hauteur d'un jour à l'autre.
+- **Plus de débordement dans une colonne très étroite** : sous 210 pixels,
+  la carte se resserre au lieu de dépasser.
+
 ## 2.0.0 — 2026-08-31
 
 **La vigilance outre-mer arrive.** Version majeure : un changement demande
