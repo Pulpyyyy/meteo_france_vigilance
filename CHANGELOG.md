@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.0 — 2026-10-07
+
+### Nouveautés
+
+- **Les deux jours côte à côte sur un téléphone** : la nouvelle option
+  `force_columns` (« Deux jours côte à côte, même à l'étroit » dans
+  l'éditeur) garde les deux colonnes du `duo` même sous 432 pixels de large.
+  La carte est deux fois moins haute, avec des vignettes plus petites. Sans
+  l'option, rien ne change : les jours s'empilent sur un écran étroit.
+
 ## 2.0.1 — 2026-10-07
 
 ### Corrections

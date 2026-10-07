@@ -287,6 +287,13 @@ par les attributs que le composant leur donne. Aucun nom d'entité n'est deviné
 |:---:|:---:|
 | <img src="images/layout-duo-light.png" alt="Disposition duo, thème clair" width="380"> | <img src="images/layout-duo-dark.png" alt="Disposition duo, thème sombre" width="380"> |
 
+Sous 432 pixels de largeur utile, ce qui est le cas d'un téléphone, les deux
+jours s'empilent : chaque colonne garde la place de sa vignette et de ses
+phénomènes. Pour les garder côte à côte malgré tout, ajoutez
+`force_columns: true`. La carte devient deux fois moins haute, au prix de
+vignettes plus petites (environ 170 pixels sur un téléphone) et de phénomènes
+répartis sur plus de lignes.
+
 #### `focus` — aujourd'hui en grand
 
 | Thème clair | Thème sombre |
@@ -341,6 +348,7 @@ Les deux axes sont indépendants — seize combinaisons.
 | `alert_only` | `false` | La carte disparaît du tableau de bord tant que rien n'atteint l'orange |
 | `hide_map_inset` | `false` | Masque le libellé « Paris - Petite couronne » de la vignette |
 | `map_width` | — | Largeur maxi de la vignette, en pixels — la hauteur de la carte se réduit d'autant |
+| `force_columns` | `false` | En `duo`, garde les deux jours côte à côte même sur un écran étroit |
 | `tap_action` | `more-info` | Action au clic |
 | `hold_action` | `more-info` | Action à l'appui long |
 | `double_tap_action` | `none` | Action au double clic |

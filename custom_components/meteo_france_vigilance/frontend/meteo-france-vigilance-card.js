@@ -74,6 +74,7 @@ const DEFAULTS = {
   hide_green: false,
   alert_only: false,
   hide_map_inset: false,
+  force_columns: false,
   // Le comportement d'avant, mais dit à voix haute et donc remplaçable : un
   // clic ouvre la fiche de ce qu'on a cliqué — le capteur sur le bloc du jour,
   // la caméra sur la vignette. C'est ce que « more-info » sans `entity` fait.
@@ -213,6 +214,7 @@ const WORDS = {
     alertOnly: "Masquer la carte tant que rien n'est signalé",
     hideMapInset: "Masquer le libellé « Paris - Petite couronne »",
     mapWidth: "Largeur maxi de la carte (px)",
+    forceColumns: "Deux jours côte à côte, même à l'étroit (duo)",
     tapAction: "Au clic",
     holdAction: "À l'appui long",
     doubleTapAction: "Au double clic",
@@ -260,6 +262,7 @@ const WORDS = {
     alertOnly: "Hide the card while nothing is reported",
     hideMapInset: "Hide the “Paris - Petite couronne” label",
     mapWidth: "Map max width (px)",
+    forceColumns: "Both days side by side, even when narrow (duo)",
     tapAction: "Tap action",
     holdAction: "Hold action",
     doubleTapAction: "Double tap action",
@@ -647,6 +650,10 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       <style>${MeteoFranceVigilanceCard.styles}</style>
       <ha-card class="theme-${this._config.theme} layout-${this._config.layout}${
         this._config.hide_map_inset ? " hide-inset" : ""
+      }${
+        // Un seul jour n'a rien à mettre à côté de lui : il garde toute la
+        // largeur au lieu d'en laisser la moitié vide.
+        this._config.force_columns && periods.length > 1 ? " force-columns" : ""
       }">
         <div class="title"></div>
         <div class="error" style="display:none"></div>
@@ -1582,6 +1589,11 @@ class MeteoFranceVigilanceCard extends HTMLElement {
            vignette, un en-tête et des puces —, non de la seule vignette. */
         grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
       }
+      /* force_columns : deux colonnes quelle que soit la largeur. Sur un
+         téléphone, chacune tombe vers 170 px — vignette plus petite, puces
+         sur plus de lignes, mais une carte deux fois moins haute. C'est à
+         l'utilisateur d'en juger, pas au seuil. */
+      .force-columns .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       /* Les deux jours partagent les mêmes lignes : en-tête, vignette,
          puces, commentaire. Une alerte aujourd'hui et rien demain ne donnent
          donc plus deux vignettes de tailles différentes — la plus courte des
@@ -1629,7 +1641,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
         .grid .comment { grid-row: 4; margin-top: 8px; }
         /* Empilés, les deux jours gardent l'écart qui les séparait. */
         @container (width < 432px) {
-          .grid > .period + .period { margin-top: 12px; }
+          ha-card:not(.force-columns) .grid > .period + .period { margin-top: 12px; }
         }
       }
 
@@ -1717,6 +1729,9 @@ class MeteoFranceVigilanceCard extends HTMLElement {
           .theme-plein .grid:has(> .alerted) > .period:not(.alerted) {
             padding-inline: 8px;
           }
+        }
+        .theme-plein.force-columns .grid:has(> .alerted) > .period:not(.alerted) {
+          padding-inline: 8px;
         }
       }
       .theme-plein .period.alerted > .head {
@@ -1810,6 +1825,7 @@ class MeteoFranceVigilanceCardEditor extends HTMLElement {
           { name: "hide_green", selector: { boolean: {} } },
           { name: "alert_only", selector: { boolean: {} } },
           { name: "hide_map_inset", selector: { boolean: {} } },
+          { name: "force_columns", selector: { boolean: {} } },
         ],
       },
       {
@@ -1889,6 +1905,7 @@ class MeteoFranceVigilanceCardEditor extends HTMLElement {
           alert_only: t.alertOnly,
           hide_map_inset: t.hideMapInset,
           map_width: t.mapWidth,
+          force_columns: t.forceColumns,
           tap_action: t.tapAction,
           hold_action: t.holdAction,
           double_tap_action: t.doubleTapAction,
